@@ -97,24 +97,21 @@ class Expert(nn.Module):
         return self.expert(x)
 
 
-class PredictHead(nn.Moudle):
+class PredictHead(nn.Module):
     def __init__(self, dims: List[int], activation: str = "relu", bias: bool = True):
         super().__init__()
         self.layer_num = len(dims) - 1
         layers = list()
-        for i in range(1, self.layer_num):
+        for i in range(self.layer_num):
             if i == (self.layer_num - 1):
-                layer = LinearReLUDropOut(
-                    dim_in=dims[i - 1], dim_out=dims[i], bias=bias, p=0, activation=None
-                )
-            else:
-                layer = LinearReLUDropOut(
-                    dim_in=dims[i - 1],
-                    dim_out=dims[i],
-                    bias=bias,
-                    p=0,
-                    activation=activation,
-                )
+                activation = None
+            layer = LinearReLUDropOut(
+                dim_in=dims[i],
+                dim_out=dims[i + 1],
+                bias=bias,
+                p=0,
+                activation=activation,
+            )
             layers.append(layer)
         self.layers = nn.Sequential(*layers)
 
@@ -175,6 +172,7 @@ class SharedBottomModel(nn.Module):
     ) -> None:
         super().__init__()
         self.bottom = Expert(dim_in, dim_out, dim_hidden, dropout)
+        assert dims[0] == dim_out
         self.towers = nn.ModuleDict(
             {
                 f"tower_{i}": PredictHead(dims, activation=activation, bias=bias)
@@ -275,13 +273,21 @@ if __name__ == "__main__":
     expert_num = 4
     task_num = 2
     x = torch.randn(batch_size, dim_in)
-    model = Multi_Gate_MOE(
-        dim_in,
-        dim_out,
-        dim_hidden,
-        expert_num,
-        task_num,
+    # model = Multi_Gate_MOE(
+    #     dim_in,
+    #     dim_out,
+    #     dim_hidden,
+    #     expert_num,
+    #     task_num,
+    # )
+    # ys = model(x)
+    # for y in ys:
+    #     print(y.size())  # [batch_size, dim_out]
+
+    model = SharedBottomModel(
+        dim_in, dim_out, dim_hidden, dims=[dim_out, dim_out, 1], task_num=2, dropout=0.1
     )
+    print(model)
     ys = model(x)
     for y in ys:
         print(y.size())  # [batch_size, dim_out]
