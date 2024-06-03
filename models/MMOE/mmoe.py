@@ -15,13 +15,26 @@ class LinearReLUDropOut(nn.Module):
     """
 
     def __init__(
-        self, dim_in: int, dim_out: int, bias: bool = True, p: float = 0.1
+        self,
+        dim_in: int,
+        dim_out: int,
+        bias: bool = True,
+        p: float = 0.1,
+        activation: str = "relu",
     ) -> None:
         super().__init__()
         # 初始化线性层、ReLU激活函数和dropout层
         self.linear = nn.Linear(dim_in, dim_out, bias)
-        self.relu = nn.ReLU(inplace=True)
-        self.dropout = nn.Dropout(p)
+        if activation is None:
+            self.act = nn.Identity()
+        elif activation.lower() == "relu":
+            self.act = nn.ReLU(inplace=True)
+        else:
+            raise NotImplementedError
+        if p == 0:
+            self.dropout = nn.Identity()
+        else:
+            self.dropout = nn.Dropout(p)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -34,7 +47,7 @@ class LinearReLUDropOut(nn.Module):
             torch.Tensor: 经过线性层、ReLU激活函数和dropout后的输出张量。
         """
         # 应用线性层，然后是ReLU激活函数，最后是dropout
-        return self.dropout(self.relu(self.linear(x)))
+        return self.dropout(self.act(self.linear(x)))
 
 
 class Expert(nn.Module):
@@ -84,6 +97,28 @@ class Expert(nn.Module):
         return self.expert(x)
 
 
+class PredictHead(nn.Module):
+    def __init__(self, dims: List[int], activation: str = "relu", bias: bool = True):
+        super().__init__()
+        self.layer_num = len(dims) - 1
+        layers = list()
+        for i in range(self.layer_num):
+            if i == (self.layer_num - 1):
+                activation = None
+            layer = LinearReLUDropOut(
+                dim_in=dims[i],
+                dim_out=dims[i + 1],
+                bias=bias,
+                p=0,
+                activation=activation,
+            )
+            layers.append(layer)
+        self.layers = nn.Sequential(*layers)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.layers(x)
+
+
 class Gate(nn.Module):
     """
     创建一个门控类，用于在多专家模型中选择专家。
@@ -122,13 +157,37 @@ class Gate(nn.Module):
         )  # 应用softmax激活函数，并通过dropout防止过拟合
 
 
-class SharedBottom(nn.Module):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        pass
+class SharedBottomModel(nn.Module):
+    def __init__(
+        self,
+        dim_in: int,
+        dim_out: int,
+        dim_hidden: List[int],
+        # prev is bottom, next is tower
+        dims: List[int],
+        task_num: int,
+        dropout: float = 0.1,
+        activation: str = "relu",
+        bias: bool = True,
+    ) -> None:
+        super().__init__()
+        self.bottom = Expert(dim_in, dim_out, dim_hidden, dropout)
+        assert dims[0] == dim_out
+        self.towers = nn.ModuleDict(
+            {
+                f"tower_{i}": PredictHead(dims, activation=activation, bias=bias)
+                for i in range(task_num)
+            }
+        )
+        self.task_num = task_num
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        pass
+    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+        x = self.bottom(x)
+        res = []
+        for i in range(self.task_num):
+            y = self.towers[f"tower_{i}"](x)
+            res.append(y)
+        return res
 
 
 class Multi_Gate_MOE(nn.Module):
@@ -214,13 +273,21 @@ if __name__ == "__main__":
     expert_num = 4
     task_num = 2
     x = torch.randn(batch_size, dim_in)
-    model = Multi_Gate_MOE(
-        dim_in,
-        dim_out,
-        dim_hidden,
-        expert_num,
-        task_num,
+    # model = Multi_Gate_MOE(
+    #     dim_in,
+    #     dim_out,
+    #     dim_hidden,
+    #     expert_num,
+    #     task_num,
+    # )
+    # ys = model(x)
+    # for y in ys:
+    #     print(y.size())  # [batch_size, dim_out]
+
+    model = SharedBottomModel(
+        dim_in, dim_out, dim_hidden, dims=[dim_out, dim_out, 1], task_num=2, dropout=0.1
     )
+    print(model)
     ys = model(x)
     for y in ys:
         print(y.size())  # [batch_size, dim_out]
