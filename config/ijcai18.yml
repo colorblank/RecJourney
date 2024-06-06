@@ -1,0 +1,44 @@
+train_dir: data\ijcai_18_alimama\round1_ijcai_18_train
+test_dir: data\ijcai_18_alimama\round1_ijcai_18_test_a
+
+data_columns:
+  - instance_id
+  - item_id
+  - item_category_list
+  - item_property_list
+  - item_brand_id
+  - item_city_id
+  - item_price_level
+  - item_sales_level
+  - item_collected_level
+  - item_pv_level
+  - user_id
+  - user_gender_id
+  - user_age_level
+  - user_occupation_id
+  - user_star_level
+  - context_id
+  - context_timestamp
+  - context_page_id
+  - predict_category_property
+  - shop_id
+  - shop_review_num_level
+  - shop_review_positive_rate
+  - shop_star_level
+  - shop_score_service
+  - shop_score_delivery
+  - shop_score_description
+  - is_trade
+
+pipelines:
+  - col_in: user_id
+    col_out: user_id_emb
+    dtype: int64 # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 220000
+    source: user
+    ops:
+      str_hash:
+        num_embeddings: 220000
