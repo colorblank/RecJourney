@@ -1,11 +1,12 @@
 import math
-from typing import Iterable, List, Union
+from datetime import datetime, timezone
+from typing import List, Optional, Union
 
 from xxhash import xxh32
 
 
-def str_hash(x: str, num_embeddings: int, seed: int = 1024) -> int:
-    assert not isinstance(x, Iterable), f"input {x} can not be Iterable."
+def str_hash(x: str, num_embeddings: int, seed: Optional[int] = None) -> int:
+    seed = 1024 if seed is None else seed
     return xxh32(str(x), seed).intdigest() % num_embeddings
 
 
@@ -13,7 +14,15 @@ def str_to_list(x: str, sep: str) -> List[int]:
     return str.split(x, sep=sep)
 
 
-def list_hash(x: List[str], num_embeddings: int, seed: int = 1024) -> List[int]:
+def list_str_split(x: List[str], sep: str) -> List[List[str]]:
+    res = [s.split(sep) for s in x]
+    return res
+
+
+def list_hash(
+    x: List[str], num_embeddings: int, seed: Optional[int] = None
+) -> List[int]:
+    seed = 1024 if seed is None else seed
     return [str_hash(i, num_embeddings, seed) for i in x]
 
 
@@ -21,8 +30,8 @@ def padding(x: List[str], max_len: int, padding_value: str) -> List[str]:
     return x[:max_len] + [padding_value] * (max_len - len(x))
 
 
-def log1x(x: Union[int, float], base: float = math.e) -> float:
-    return math.log(float(x) + 1, base=base)
+def log1p(x: Union[int, float]) -> float:
+    return math.log1p(float(x))
 
 
 def floor_divde(x: int, divide: int) -> int:
@@ -33,3 +42,28 @@ def clip(
     x: Union[int, float], min_value: Union[int, float], max_value: Union[int, float]
 ) -> Union[int, float]:
     return min(max_value, max(min_value, x))
+
+
+def int_to_date(x: int, tz=None) -> datetime:
+    time_zone = timezone.utc if tz is None else tz
+    return datetime.fromtimestamp(x, tz=time_zone)
+
+
+def get_day(x: datetime) -> int:
+    return x.day
+
+
+def get_hour(x: datetime) -> int:
+    return x.hour
+
+
+def get_minute(x: datetime) -> int:
+    return x.min
+
+
+def get_month(x: datetime) -> int:
+    return x.month
+
+
+def isoweekday(x: datetime) -> int:
+    return x.isoweekday()
