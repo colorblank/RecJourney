@@ -1,6 +1,8 @@
+from dataclasses import dataclass
+from typing import List, Optional
+
 import torch
 import torch.nn as nn
-from typing import List
 
 
 class LinearReLUDropOut(nn.Module):
@@ -97,6 +99,13 @@ class Expert(nn.Module):
         return self.expert(x)
 
 
+@dataclass
+class HeadArgs:
+    dims: List[int]
+    activation: Optional[str] = "relu"
+    bias: Optional[bool] = True
+
+
 class PredictHead(nn.Module):
     def __init__(self, dims: List[int], activation: str = "relu", bias: bool = True):
         super().__init__()
@@ -191,6 +200,17 @@ class SharedBottomModel(nn.Module):
         return res
 
 
+@dataclass
+class MMOEArgs:
+    dim_in: int
+    dim_out: int
+    dim_hidden: List[int]
+    expert_num: int
+    task_num: int
+    dropout: Optional[float] = 0.1
+    bias: Optional[bool] = True
+
+
 class Multi_Gate_MOE(nn.Module):
     """
     实现一个多门限专家模型(Multi-Gate Mixture of Experts, MOE)的类。
@@ -264,6 +284,28 @@ class Multi_Gate_MOE(nn.Module):
             out.append(f)
 
         return out
+
+
+class MMOE(nn.Module):
+    def __init__(self, mmoe_args: MMOEArgs, head_args: HeadArgs) -> None:
+        super().__init__()
+        self.mmoe = Multi_Gate_MOE(**mmoe_args.__dict__)
+        self.task_num = mmoe_args.task_num
+        self.heads = nn.ModuleDict(
+            {
+                f"head_{i}": PredictHead(**head_args.__dict__)
+                for i in range(self.task_num)
+            }
+        )
+
+    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+        feats = self.mmoe(x)
+        outs = list()
+        for i in range(self.task_num):
+            out = self.heads[f"head_{i}"](feats[i])
+            out = torch.sigmoid(out)
+            outs.append(out)
+        return outs
 
 
 if __name__ == "__main__":
