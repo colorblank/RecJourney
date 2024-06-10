@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from loguru import logger
-from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.metrics import accuracy_score, log_loss, roc_auc_score
 
 from preprocess.dtypes import DataConfig, Pipeline
 
@@ -33,6 +33,44 @@ class Trainer(nn.Module):
         self.optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
         self.log_interval = log_interval
+
+        self.val_tenosr_dict = dict()
+
+    def evaluation(
+        self,
+        epoch: int,
+    ):
+        x_dict = dict()
+        y_dict = dict()
+        if len(self.val_tenosr_dict) == 0:
+            df = pd.read_csv(self.cfg.val_dir, sep=self.cfg.sep)
+            for feat_idx, pipe in enumerate(self.cfg.pipelines):
+                # each column
+                tensor = self._chunk_to_tensor(df, pipe)
+                self.val_tenosr_dict[pipe.col_out] = tensor
+                if pipe.source == "label":
+                    y_dict[pipe.col_out] = tensor
+                else:
+                    x_dict[pipe.col_out] = tensor
+        else:
+            for feat_idx, pipe in enumerate(self.cfg.pipelines):
+                if pipe.source == "label":
+                    y_dict[pipe.col_out] = self.val_tenosr_dict[pipe.col_out]
+                else:
+                    x_dict[pipe.col_out] = self.val_tenosr_dict[pipe.col_out]
+        with torch.no_grad():
+            y_pred = self.forward(x_dict)
+
+            for i in range(len(y_pred)):
+                y_p = y_pred[i]
+                y_t = y_dict[list(y_dict.keys())[i]].float()
+                acc, auc, logloss = self.cal_metric(y_p, y_t)
+                # .5f
+                logger.info(
+                    f"[Val] Epoch: {epoch+1}, Acc: {acc:.5f}, AUC: {auc:.5f}, Logloss: {logloss:.5f}."
+                )
+
+        # self.train_one_chunk(x_dict, y_dict, chunk_idx, chunk.shape[0], epoch)
 
     def _chunk_to_tensor(
         self, chunk: pd.DataFrame, pipe: Pipeline, reduce: str = "sum"
@@ -78,7 +116,8 @@ class Trainer(nn.Module):
         y_true = y_true.detach().flatten().cpu().numpy().astype(int)
         auc = roc_auc_score(y_true, y_pred)
         accuracy = accuracy_score(y_true, (y_pred > 0.5).astype(int))
-        return accuracy, auc
+        logloss = log_loss(y_true, y_pred)
+        return accuracy, auc, logloss
 
     def train_one_chunk(
         self,
@@ -109,11 +148,11 @@ class Trainer(nn.Module):
                 loss = self.loss_fn(y_p, y_t)
                 total_loss += loss
                 if (chunk_index + 1) % self.log_interval == 0:
-                    acc, auc = self.cal_metric(y_p, y_t)
+                    acc, auc, logloss = self.cal_metric(y_p, y_t)
                     # .5f
                     logger.info(
-                        f"[Train] Epoch: {epoch}, Chunk: {chunk_index},sample: {sample_count},\
-Loss: {loss:.5f}, Acc: {acc:.5f}, AUC: {auc:.5f}"
+                        f"[Train] Epoch: {epoch+1}, Chunk: {chunk_index},sample: {sample_count},\
+Loss: {loss:.5f}, Acc: {acc:.5f}, AUC: {auc:.5f}, Logloss: {logloss:.5f}."
                     )
             total_loss.backward()
             self.optimizer.step()
@@ -158,6 +197,7 @@ Loss: {loss:.5f}, Acc: {acc:.5f}, AUC: {auc:.5f}"
         for e in range(self.epochs):
             logger.info(f"epoch {e+1}")
             self.train_one_epoch(e)
+            self.evaluation(e)
 
 
 if __name__ == "__main__":
@@ -165,7 +205,7 @@ if __name__ == "__main__":
 
     import yaml
 
-    from models.MMOE.mmoe import SharedBottomModel
+    from models.MMOE.mmoe import MMOE, HeadArgs, MMOEArgs, SharedBottomModel
     from preprocess.dtypes import DataConfig
     from preprocess.emb import build_emb_dict, cal_feat_dim
 
@@ -181,17 +221,27 @@ if __name__ == "__main__":
     dims = [dim_out, dim_out, 1]
     task_num = 1
     drop_out = 0.1
-    device = "mps"
+    device = "cuda"
     emb_dict = build_emb_dict(data_cfg, emb_dim=emb_dim)
     feat_dims = cal_feat_dim(data_cfg, emb_dim=emb_dim)
-    base_model = SharedBottomModel(
+    mmoe_args = MMOEArgs(
         dim_in=feat_dims,
         dim_out=dim_out,
         dim_hidden=dim_hidden,
-        dims=dims,
-        task_num=task_num,
-        dropout=drop_out,
+        expert_num=4,
+        task_num=1,
     )
+    head_args = HeadArgs(dims=[dim_out, dim_out, 1])
+    base_model = MMOE(mmoe_args, head_args)
+    # base_model = SharedBottomModel(
+    #     dim_in=feat_dims,
+    #     dim_out=dim_out,
+    #     dim_hidden=dim_hidden,
+    #     dims=dims,
+    #     task_num=task_num,
+    #     dropout=drop_out,
+    # )
+
     trainer = Trainer(data_cfg, base_model, emb_dict, epochs=10, device=device, lr=1e-4)
     trainer.to(device)
     trainer.train()
