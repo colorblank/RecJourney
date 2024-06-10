@@ -4,12 +4,12 @@ from functools import partial
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 DTYPES = Literal["int", "float"]
-SOURCES = Literal["user", "item", "context"]
+SOURCES = Literal["user", "item", "context", "label"]
 FEATURE_TYPES = Literal["sparse", "dense", "varlen_sparse"]
 
 
 @dataclass
-class pipeline:
+class Pipeline:
     col_in: str
     col_out: str
     fillna: Union[str, int, float]
@@ -39,8 +39,11 @@ class DataConfig:
     train_dir: str
     test_dir: str
     data_columns: List[str]
-    pipelines: List[pipeline]
+    pipelines: List[Pipeline]
+    label_columns: Optional[List[str]] = None
+    chunksize: Optional[int] = None
+    sep: Optional[str] = " "
 
     def __post_init__(self):
         for i, pipe in enumerate(self.pipelines):
-            self.pipelines[i] = pipeline(**pipe)
+            self.pipelines[i] = Pipeline(**pipe)

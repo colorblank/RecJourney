@@ -186,6 +186,7 @@ class SharedBottomModel(nn.Module):
         res = []
         for i in range(self.task_num):
             y = self.towers[f"tower_{i}"](x)
+            y = torch.sigmoid(y)
             res.append(y)
         return res
 
@@ -285,7 +286,7 @@ if __name__ == "__main__":
     #     print(y.size())  # [batch_size, dim_out]
 
     model = SharedBottomModel(
-        dim_in, dim_out, dim_hidden, dims=[dim_out, dim_out, 1], task_num=2, dropout=0.1
+        dim_in, dim_out, dim_hidden, dims=[dim_out, dim_out, 1], task_num=1, dropout=0.1
     )
     print(model)
     ys = model(x)

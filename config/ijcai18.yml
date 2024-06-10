@@ -1,6 +1,10 @@
-train_dir: data\ijcai_18_alimama\round1_ijcai_18_train
-test_dir: data\ijcai_18_alimama\round1_ijcai_18_test_a
+train_dir: data/round1_ijcai_18_train/round1_ijcai_18_train_20180301.txt
+test_dir: data/round1_ijcai_18_test_a
+sep: " "
+chunksize: 1024
 
+label_columns:
+    - is_trade
 data_columns:
     - instance_id
     - item_id
@@ -271,17 +275,6 @@ pipelines:
       ops:
           - str_hash:
               num_embeddings: 40
-    # - col_in: predict_category_property
-    #   col_out: predict_category_property_emb
-    #   dtype: int # dataframe type
-    #   fillna: 0
-    #   tensor_type: int #
-    #   feature_type: sparse
-    #   num_embeddings: 90000
-    #   source: context
-    #   ops:
-    #       str_to_list:
-    #           sep: ';'
 
     - col_in: shop_id
       col_out: shop_id_emb
@@ -364,3 +357,11 @@ pipelines:
               min_value: 0
               max_value: 1
           - log1p: {}
+    - col_in: is_trade
+      col_out: is_trade
+      dtype: int # dataframe type
+      fillna: 0
+      tensor_type: int #
+      feature_type: sparse
+      source: label
+      ops: {}
