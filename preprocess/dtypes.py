@@ -37,7 +37,7 @@ class Pipeline:
 @dataclass
 class DataConfig:
     train_dir: str
-    test_dir: str
+    val_dir: str
     data_columns: List[str]
     pipelines: List[Pipeline]
     label_columns: Optional[List[str]] = None
