@@ -1,7 +1,7 @@
-train_dir: data/round1_ijcai_18_train/round1_ijcai_18_train_20180301.txt
-test_dir: data/round1_ijcai_18_test_a
-sep: " "
-chunksize: 1024
+train_dir: data/train/train.csv
+val_dir: data/val/val.csv
+sep: "\t"
+chunksize: 2048
 
 label_columns:
     - is_trade
