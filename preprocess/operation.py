@@ -49,21 +49,65 @@ def int_to_date(x: int, tz=None) -> datetime:
     return datetime.fromtimestamp(x, tz=time_zone)
 
 
+def str_to_date(x: str, format: str) -> datetime:
+    return datetime.strptime(x, format)
+
+
 def get_day(x: datetime) -> int:
+    """一个月的第几天
+
+    Args:
+        x (datetime): _description_
+
+    Returns:
+        int: _description_
+    """
     return x.day
 
 
 def get_hour(x: datetime) -> int:
+    """当天的小时
+
+    Args:
+        x (datetime): _description_
+
+    Returns:
+        int: _description_
+    """
     return x.hour
 
 
 def get_minute(x: datetime) -> int:
+    """当前小时的第多少分钟
+
+    Args:
+        x (datetime): _description_
+
+    Returns:
+        int: _description_
+    """
     return x.min
 
 
 def get_month(x: datetime) -> int:
+    """第几个月
+
+    Args:
+        x (datetime): _description_
+
+    Returns:
+        int: _description_
+    """
     return x.month
 
 
 def isoweekday(x: datetime) -> int:
+    """周几
+
+    Args:
+        x (datetime): _description_
+
+    Returns:
+        int: _description_
+    """
     return x.isoweekday()
