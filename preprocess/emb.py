@@ -1,9 +1,9 @@
 import torch.nn as nn
 
-from .dtypes import DataConfig
+from .dtypes import Config
 
 
-def build_emb_dict(cfg: DataConfig, emb_dim: int) -> nn.ModuleDict:
+def build_emb_dict(cfg: Config, emb_dim: int, device: str = "cpu") -> nn.ModuleDict:
     """
     根据配置信息构建嵌入字典。
 
@@ -30,39 +30,7 @@ def build_emb_dict(cfg: DataConfig, emb_dim: int) -> nn.ModuleDict:
             # 为该稀疏特征创建一个嵌入层，并添加到嵌入字典中
             embedding_dict[pipeline.col_out] = nn.Embedding(
                 pipeline.num_embeddings, emb_dim
-            )
+            ).to(device=device)
     # 返回包含所有嵌入层的字典
     return embedding_dict
 
-
-def cal_feat_dim(cfg: DataConfig, emb_dim: int) -> int:
-    """
-    计算特征维度的总和。
-
-    根据配置中的处理管道（pipelines），累加稀疏特征的嵌入维度和稠密特征的维度。
-    稀疏特征的维度通过给定的嵌入维度进行累加，稠密特征的维度固定为1。
-
-    参数:
-    cfg: DataConfig - 配置对象，包含处理管道的信息。
-    emb_dim: int - 稀疏特征的嵌入维度。
-
-    返回:
-    int - 所有特征维度的总和。
-    """
-    # 初始化特征维度总和为0
-    feat_dim = 0
-    # 遍历配置中的每个处理管道
-    for pipeline in cfg.pipelines:
-        if pipeline.source == "label":
-            continue
-        # 获取当前管道的特征类型
-        feature_type = pipeline.feature_type
-        # 如果特征类型以"sparse"结尾，视为稀疏特征
-        if feature_type.endswith("sparse"):
-            # 稀疏特征的维度累加嵌入维度
-            feat_dim += emb_dim
-        else:
-            # 否则，视为稠密特征，维度累加1
-            feat_dim += 1
-    # 返回计算得到的特征维度总和
-    return feat_dim
