@@ -47,3 +47,34 @@ class DataConfig:
     def __post_init__(self):
         for i, pipe in enumerate(self.pipelines):
             self.pipelines[i] = Pipeline(**pipe)
+
+
+@dataclass
+class DataSetConfig:
+    set_name: str
+    file_type: Literal["csv", "excel"]
+    data_path: Union[str, List[str]]
+    sep: str  # data file separator, default is ","
+    chunksize: Optional[int] = None
+    names: Optional[List[str]] = None  # data file column names
+    label_columns: Optional[List[str]] = None  # label column names
+
+    join_type: Literal["concat", "merge"] = None
+    join_on: Optional[List[str]] = None
+    how: Literal["inner", "left"] = None
+    join_names: Optional[List[str]] = None  # aonther data set names
+
+
+@dataclass
+class Config:
+    train_set: DataSetConfig
+    pipelines: List[Pipeline]
+
+    val_set: Optional[DataSetConfig] = None
+    test_set: Optional[DataSetConfig] = None
+
+    combo_set: Optional[DataSetConfig] = None
+
+    def __post_init__(self):
+        for i, pipe in enumerate(self.pipelines):
+            self.pipelines[i] = Pipeline(**pipe)
