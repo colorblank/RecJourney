@@ -119,67 +119,92 @@ class DynamicGRU(nn.Module):
         return output
 
 
+class ActivationUnit(nn.Module):
+    """from DIN
+
+    Args:
+        nn (_type_): _description_
+    """
+
+    def __init__(
+        self,
+        dim_in: int,
+        hidden_dims: List[int],
+        dim_out: int = 1,
+        act: str = "prelu",
+        bias: bool = True,
+    ) -> None:
+        super().__init__()
+        dims = [dim_in] + hidden_dims + [dim_out]
+        self.fc = nn.Sequential(
+            *[
+                LinearAct(dim_in, dim_out, bias, act)
+                for dim_in, dim_out in zip(dims[:-1], dims[1:])
+            ]
+        )
+
+    def forward(self, x_hist: torch.Tensor, x_cand: torch.Tensor) -> torch.Tensor:
+        """_summary_
+
+        Arguments:
+            x_hist -- a list item features of history items.
+                each item feature is a tensor.
+                shape: [batch_size, seq_len, dim]
+            x_cand -- candicate item feature
+                shape: [batch_size, dim]
+
+        Returns:
+            torch.Tensor, size: [batch_size, seq_len, 1]
+        """
+        seq_len = x_hist.shape[1]
+        x_cand = x_cand.unsqueeze(1).expand(-1, seq_len, -1)
+        x = torch.cat([x_hist, x_cand, x_hist - x_cand, x_cand * x_hist], dim=-1)
+        return self.fc(x)
+
+
 class AttentionLayer(nn.Module):
     def __init__(
         self,
         emb_dim: int,
-        hidden_dimss: List[int],
+        hidden_dims: List[int],
+        return_score: bool = False,
         bias: bool = True,
         act: str = "sigmoid",
-    ):
+        mask_value: float = -float("inf"),
+    ) -> None:
         super().__init__()
-
-        layers_dimensions = [emb_dim * 4] + hidden_dimss + [1]
-        self.layers = nn.Sequential(
-            *[
-                LinearAct(dim_in, dim_out, bias, act)
-                for dim_in, dim_out in zip(
-                    layers_dimensions[:-1], layers_dimensions[1:]
-                )
-            ]
-        )
+        self.return_score = return_score
+        self.mask_value = mask_value
+        self.local_attn = ActivationUnit(emb_dim * 4, hidden_dims, bias=bias, act=act)
 
     def forward(
         self,
         query: torch.Tensor,
-        fact: torch.Tensor,
-        mask: torch.Tensor,
-        return_scores: bool = False,
+        keys: torch.Tensor,
+        mask: torch.Tensor = None,
     ) -> torch.Tensor:
-        """
-        Perform forward pass to compute attention-weighted facts or directly return attention scores.
+        """_summary_
 
-        Parameters:
-        - query (torch.Tensor): Query tensor, shape (B, D) where B is batch size, D is embedding dimension.
-        - fact (torch.Tensor): Fact tensor, shape (B, T, D) where T is sequence length.
-        - mask (torch.Tensor): Mask tensor, shape (B, T) indicating valid inputs.
-        - return_scores (bool, optional): If True, returns attention scores. Defaults to False.
+        Args:
+            query (torch.Tensor): size = (batch_size, dim)
+            keys (torch.Tensor): size = (batch_size, seq_len, dim)
+            mask (torch.Tensor, optional): size = (batch_size, seq_len). Defaults to None.
 
         Returns:
-        - torch.Tensor: Attention-weighted facts if return_scores is False, otherwise attention scores.
+            torch.Tensor: size = (batch_size, seq_len)
         """
-        B, T, D = fact.size()
+        attention_score = self.local_attn(keys, query)  # [batch_size, seq_len, 1]
 
-        query_broadcasted = query.unsqueeze(1).expand(B, T, D)
-        combined = torch.cat(
-            [
-                fact,  # Original facts (B, T, D)
-                query_broadcasted,  # Broadcasted query (B, T, D)
-                fact * query_broadcasted,  # Element-wise product (B, T, D)
-                query_broadcasted - fact,  # Element-wise difference (B, T, D)
-            ],
-            dim=2,
-        )  # Resulting in (B, T, 4D)
+        if mask is not None:
+            mask = mask.unsqueeze(-1) == 1  # [batch_size, seq_len, 1]
+            attention_score = attention_score.masked_fill(~mask, self.mask_value)
 
-        feat = self.layers(combined)  # (B, T, 1)
-        feat = feat.squeeze(-1)
-
-        masked_scores = torch.where(mask == 1, feat, float("-inf"))
-        attn_weights = torch.softmax(masked_scores, dim=1).masked_fill(mask == 0, 0)
-        if return_scores:
-            return attn_weights.squeeze(1)
+        attn_weights = torch.softmax(attention_score, dim=1)
+        attn_weights = attn_weights.squeeze(-1)  # [batch_size, seq_len]
+        if self.return_score:
+            return attn_weights
         else:
-            return torch.einsum("bt,btd->bd", attn_weights, fact)
+            return torch.einsum("bt,btd->bd", attn_weights, keys)
 
 
 class DIEN(nn.Module):
@@ -255,14 +280,14 @@ class DIEN(nn.Module):
 if __name__ == "__main__":
     emb_dim = 10
     hidden_dimss = [20, 30]
-    attn_model = AttentionLayer(emb_dim, hidden_dimss)
+    attn_model = AttentionLayer(emb_dim, hidden_dimss, return_score=True)
     batch_size = 2
     seq_length = 5
     emb_dim = 10
     query = torch.randn(batch_size, emb_dim)
     fact = torch.randn(batch_size, seq_length, emb_dim)
-    mask = torch.ones(batch_size, seq_length)
+    mask = torch.randn(batch_size, seq_length) > 0
 
     # 运行 forward 方法
-    weighted_facts = attn_model.forward(query, fact, mask, return_scores=True)
+    weighted_facts = attn_model.forward(query, fact, mask)
     print(weighted_facts.shape)
