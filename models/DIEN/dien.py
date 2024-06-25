@@ -1,5 +1,26 @@
+from typing import List
+
 import torch
 import torch.nn as nn
+
+
+class LinearAct(nn.Module):
+    def __init__(
+        self, dim_in: int, dim_out: int, bias: bool = True, act: str = "relu"
+    ) -> None:
+        super().__init__()
+        self.linear = nn.Linear(dim_in, dim_out, bias)
+        if act.lower() == "relu":
+            self.act = nn.ReLU(inplace=True)
+        elif act.lower() == "sigmoid":
+            self.act = nn.Sigmoid()
+        elif act.lower() == "prelu":
+            self.act = nn.PReLU()
+        else:
+            raise NotImplementedError(f"{act} is not implemented")
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.act(self.linear(x))
 
 
 class GRU(nn.Module):
@@ -26,21 +47,33 @@ class GRU(nn.Module):
 
 
 class AUGRUCell(nn.Module):
-    def __init__(self, input_dim, hidden_dim, bias=True):
+    def __init__(self, dim_in: int, dim_hidden: int, bias: bool = True):
         super(AUGRUCell, self).__init__()
 
-        in_dim = input_dim + hidden_dim
+        in_dim = dim_in + dim_hidden
         self.reset_gate = nn.Sequential(
-            nn.Linear(in_dim, hidden_dim, bias=bias), nn.Sigmoid()
+            nn.Linear(in_dim, dim_hidden, bias=bias), nn.Sigmoid()
         )
         self.update_gate = nn.Sequential(
-            nn.Linear(in_dim, hidden_dim, bias=bias), nn.Sigmoid()
+            nn.Linear(in_dim, dim_hidden, bias=bias), nn.Sigmoid()
         )
         self.h_hat_gate = nn.Sequential(
-            nn.Linear(in_dim, hidden_dim, bias=bias), nn.Tanh()
+            nn.Linear(in_dim, dim_hidden, bias=bias), nn.Tanh()
         )
 
-    def forward(self, X, h_prev, attention_score):
+    def forward(
+        self, X: torch.Tensor, h_prev: torch.Tensor, attention_score: torch.Tensor
+    ) -> torch.Tensor:
+        """_summary_
+
+        Arguments:
+            X -- current feature, size = (batch_size, dim_in)
+            h_prev -- previous hidden state, size = (batch_size, dim_hidden)
+            attention_score -- _description_
+
+        Returns:
+            _description_
+        """
         temp_input = torch.cat([h_prev, X], dim=-1)
         r = self.reset_gate(temp_input)
         u = self.update_gate(temp_input)
@@ -54,18 +87,31 @@ class AUGRUCell(nn.Module):
 
 
 class DynamicGRU(nn.Module):
-    def __init__(self, input_dim, hidden_dim, bias=True):
+    def __init__(self, dim_in: int, dim_hidden: int, bias=True):
         super().__init__()
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        self.rnn_cell = AUGRUCell(input_dim, hidden_dim, bias=True)
+        self.dim_hidden = dim_hidden
+        self.rnn_cell = AUGRUCell(dim_in, dim_hidden, bias=bias)
 
-    def forward(self, X, attenion_scores, h0=None):
-        B, T, D = X.shape
+    def forward(
+        self, X: torch.Tensor, attenion_scores: torch.Tensor, h0: torch.Tensor = None
+    ) -> torch.Tensor:
+        """_summary_
+
+        Arguments:
+            X -- history visited item feature, size = (batch_size, seq_len, dim_in)
+            attenion_scores -- _description_
+
+        Keyword Arguments:
+            h0 -- _description_ (default: {None})
+
+        Returns:
+            _description_
+        """
+        B, T, _ = X.shape
         H = self.hidden_dim
 
-        output = torch.zeros(B, T, H).type(X.type())
-        h_prev = torch.zeros(B, H).type(X.type()) if h0 is None else h0
+        output = torch.zeros(B, T, H).type(X.type()).to(X.device)
+        h_prev = torch.zeros(B, H).type(X.type()).to(X.device) if h0 is None else h0
         for t in range(T):
             h_prev = output[:, t, :] = self.rnn_cell(
                 X[:, t, :], h_prev, attenion_scores[:, t]
@@ -74,67 +120,103 @@ class DynamicGRU(nn.Module):
 
 
 class AttentionLayer(nn.Module):
-    def __init__(self, embedding_dim, hidden_size, activation_layer="sigmoid"):
+    def __init__(
+        self,
+        emb_dim: int,
+        hidden_dimss: List[int],
+        bias: bool = True,
+        act: str = "sigmoid",
+    ):
         super().__init__()
 
-        Activation = nn.Sigmoid
-        if activation_layer == "Dice":
-            pass
-
-        def _dense(in_dim, out_dim):
-            return nn.Sequential(nn.Linear(in_dim, out_dim), Activation())
-
-        dimension_pair = [embedding_dim * 8] + hidden_size
-        layers = [
-            _dense(dimension_pair[i], dimension_pair[i + 1])
-            for i in range(len(hidden_size))
-        ]
-        layers.append(nn.Linear(hidden_size[-1], 1))
-        self.model = nn.Sequential(*layers)
-
-    def forward(self, query, fact, mask, return_scores=False):
-        B, T, D = fact.shape
-
-        query = torch.ones((B, T, 1)).type(query.type()) * query.view((B, 1, D))
-        combination = torch.cat([fact, query, fact * query, query - fact], dim=2)
-
-        scores = self.model(combination).squeeze()
-        scores = torch.where(mask == 1, scores, torch.ones_like(scores) * (-(2**31)))
-
-        scores = (scores.softmax(dim=-1) * mask).view((B, 1, T))
-
-        if return_scores:
-            return scores.squeeze()
-        return torch.matmul(scores, fact).squeeze()
-
-
-class DIEN(nn.Module):
-    def __init__(self, n_uid, n_mid, n_cid, embedding_dim):
-        super().__init__()
-
-        self.gru_based_layer = nn.GRU(
-            embedding_dim * 2, embedding_dim * 2, batch_first=True
+        layers_dimensions = [emb_dim * 4] + hidden_dimss + [1]
+        self.layers = nn.Sequential(
+            *[
+                LinearAct(dim_in, dim_out, bias, act)
+                for dim_in, dim_out in zip(
+                    layers_dimensions[:-1], layers_dimensions[1:]
+                )
+            ]
         )
-        self.attention_layer = AttentionLayer(
-            embedding_dim, hidden_size=[80, 40], activation_layer="sigmoid"
-        )
-        self.gru_customized_layer = DynamicGRU(embedding_dim * 2, embedding_dim * 2)
-
-        # self.output_layer = MLP( embedding_dim * 9, [ 200, 80], 1, 'ReLU')
 
     def forward(
         self,
-        user_embedding,
-        item_historical_embedding,
-        item_embedding,
-        mask,
-        sequential_length,
-        neg_sample=False,
+        query: torch.Tensor,
+        fact: torch.Tensor,
+        mask: torch.Tensor,
+        return_scores: bool = False,
+    ) -> torch.Tensor:
+        """
+        Perform forward pass to compute attention-weighted facts or directly return attention scores.
+
+        Parameters:
+        - query (torch.Tensor): Query tensor, shape (B, D) where B is batch size, D is embedding dimension.
+        - fact (torch.Tensor): Fact tensor, shape (B, T, D) where T is sequence length.
+        - mask (torch.Tensor): Mask tensor, shape (B, T) indicating valid inputs.
+        - return_scores (bool, optional): If True, returns attention scores. Defaults to False.
+
+        Returns:
+        - torch.Tensor: Attention-weighted facts if return_scores is False, otherwise attention scores.
+        """
+        B, T, D = fact.size()
+
+        query_broadcasted = query.unsqueeze(1).expand(B, T, D)
+        combined = torch.cat(
+            [
+                fact,  # Original facts (B, T, D)
+                query_broadcasted,  # Broadcasted query (B, T, D)
+                fact * query_broadcasted,  # Element-wise product (B, T, D)
+                query_broadcasted - fact,  # Element-wise difference (B, T, D)
+            ],
+            dim=2,
+        )  # Resulting in (B, T, 4D)
+
+        raw_scores = torch.squeeze(self.layers(combined), dim=-1)
+        masked_scores = torch.where(mask == 1, raw_scores, float("-inf"))
+        attn_weights = torch.softmax(masked_scores, dim=1).masked_fill(mask == 0, 0)
+        if return_scores:
+            return attn_weights.squeeze(1)
+        else:
+            return torch.einsum("bt,btd->bd", attn_weights, fact)
+
+
+class DIEN(nn.Module):
+    def __init__(
+        self, emb_dim: int, hidden_dims: List[int] = [80, 40], act: str = "relu"
     ):
-        # history item embedding; [ batch_size, max_length, embedding_dim * 2 ]
-        # target item embedding; [ batch_size, embedding_dim * 2 ]
+        super().__init__()
+
+        self.gru_based_layer = nn.GRU(emb_dim * 2, emb_dim * 2, batch_first=True)
+        self.attention_layer = AttentionLayer(emb_dim, hidden_dims=hidden_dims, act=act)
+        self.gru_customized_layer = DynamicGRU(emb_dim * 2, emb_dim * 2)
+
+    def forward(
+        self,
+        user_embedding: torch.Tensor,
+        item_historical_embedding: torch.Tensor,
+        item_embedding: torch.Tensor,
+        mask: torch.Tensor,
+        sequential_length,
+    ):
+        """_summary_
+
+        Arguments:
+            user_embedding -- _description_
+            item_historical_embedding -- _description_
+            item_embedding -- _description_
+            mask -- _description_
+            sequential_length -- _description_
+
+        Keyword Arguments:
+            neg_sample -- _description_ (default: {False})
+
+        Returns:
+            _description_
+        """
+        # history item embedding; [ batch_size, max_length, emb_dim * 2 ]
+        # target item embedding; [ batch_size, emb_dim * 2 ]
         # mask; [ batch_size, max_length ]
-        # user embedding; [ batch_size, embedding_dim ]
+        # user embedding; [ batch_size, emb_dim ]
         item_historical_embedding_sum = torch.matmul(
             mask.unsqueeze(dim=1), item_historical_embedding
         ).squeeze() / sequential_length.unsqueeze(dim=1)
@@ -167,36 +249,17 @@ class DIEN(nn.Module):
         return scores.squeeze()
 
 
-class DIEN(nn.Module):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+if __name__ == "__main__":
+    emb_dim = 10
+    hidden_dimss = [20, 30]
+    attn_model = AttentionLayer(emb_dim, hidden_dimss)
+    batch_size = 2
+    seq_length = 5
+    emb_dim = 10
+    query = torch.randn(batch_size, emb_dim)
+    fact = torch.randn(batch_size, seq_length, emb_dim)
+    mask = torch.ones(batch_size, seq_length)
 
-        # gru
-        self.gru = nn.GRU(
-            input_size=self.cfg.emb_dim,
-            hidden_size=self.cfg.emb_dim,
-            num_layers=1,
-            batch_first=True,
-        )
-        # attention layer
-        self.attention = nn.Sequential(
-            nn.Linear(self.cfg.emb_dim, self.cfg.emb_dim),
-            nn.Tanh(),
-            nn.Linear(self.cfg.emb_dim, 1),
-            nn.Softmax(dim=1),
-        )
-        # weighted gru
-        self.wgru = nn.GRU(
-            input_size=self.cfg.emb_dim,
-            hidden_size=self.cfg.emb_dim,
-            num_layers=1,
-            batch_first=True,
-        )
-
-        # predict layer
-        self.predict = nn.Sequential(
-            nn.Linear(self.cfg.emb_dim * 2, self.cfg.emb_dim),
-            nn.ReLU(),
-            nn.Linear(self.cfg.emb_dim, 1),
-            nn.Sigmoid(),
-        )
+    # 运行 forward 方法
+    weighted_facts = attn_model.forward(query, fact, mask, return_scores=True)
+    print(weighted_facts.shape)
