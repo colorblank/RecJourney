@@ -1,0 +1,8 @@
+{
+    "nfeat": null,
+    "dim_in": null,
+    "dim_qk": 64,
+    "dim_v": 128,
+    "nhead": 8,
+    "out_dim": 1
+}
