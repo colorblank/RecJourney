@@ -171,8 +171,10 @@ class AttentionLayer(nn.Module):
             dim=2,
         )  # Resulting in (B, T, 4D)
 
-        raw_scores = torch.squeeze(self.layers(combined), dim=-1)
-        masked_scores = torch.where(mask == 1, raw_scores, float("-inf"))
+        feat = self.layers(combined)  # (B, T, 1)
+        feat = feat.squeeze(-1)
+
+        masked_scores = torch.where(mask == 1, feat, float("-inf"))
         attn_weights = torch.softmax(masked_scores, dim=1).masked_fill(mask == 0, 0)
         if return_scores:
             return attn_weights.squeeze(1)
@@ -196,16 +198,21 @@ class DIEN(nn.Module):
         item_historical_embedding: torch.Tensor,
         item_embedding: torch.Tensor,
         mask: torch.Tensor,
-        sequential_length,
+        sequential_length: torch.Tensor,
     ):
         """_summary_
 
         Arguments:
-            user_embedding -- _description_
-            item_historical_embedding -- _description_
-            item_embedding -- _description_
-            mask -- _description_
-            sequential_length -- _description_
+            user_embedding -- user profile embedding
+                size: (batch_size, emb_dim)
+            item_historical_embedding -- user visited items embedding
+                size = (batch_size, seq_len, emb_dim)
+            item_embedding -- target item embedding
+                size = (batch_size, emb_dim)
+            mask -- mask of item_historical_embedding
+                size = (batch_size, seq_len)
+            sequential_length -- length of each user's historical items
+                size = (batch_size, )
 
         Keyword Arguments:
             neg_sample -- _description_ (default: {False})
@@ -213,10 +220,6 @@ class DIEN(nn.Module):
         Returns:
             _description_
         """
-        # history item embedding; [ batch_size, max_length, emb_dim * 2 ]
-        # target item embedding; [ batch_size, emb_dim * 2 ]
-        # mask; [ batch_size, max_length ]
-        # user embedding; [ batch_size, emb_dim ]
         item_historical_embedding_sum = torch.matmul(
             mask.unsqueeze(dim=1), item_historical_embedding
         ).squeeze() / sequential_length.unsqueeze(dim=1)
