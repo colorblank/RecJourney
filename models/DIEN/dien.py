@@ -108,7 +108,7 @@ class DynamicGRU(nn.Module):
             _description_
         """
         B, T, _ = X.shape
-        H = self.hidden_dim
+        H = self.dim_hidden
 
         output = torch.zeros(B, T, H).type(X.type()).to(X.device)
         h_prev = torch.zeros(B, H).type(X.type()).to(X.device) if h0 is None else h0
@@ -209,13 +209,26 @@ class AttentionLayer(nn.Module):
 
 class DIEN(nn.Module):
     def __init__(
-        self, emb_dim: int, hidden_dims: List[int] = [80, 40], act: str = "relu"
+        self,
+        user_emb_dim: int,
+        emb_dim: int,
+        hidden_dims: List[int] = [80, 40],
+        act: str = "relu",
+        predict_dims: List[int] = [80, 40],
     ):
         super().__init__()
 
-        self.gru_based_layer = nn.GRU(emb_dim * 2, emb_dim * 2, batch_first=True)
+        self.gru_based_layer = nn.GRU(emb_dim, emb_dim, batch_first=True)
         self.attention_layer = AttentionLayer(emb_dim, hidden_dims=hidden_dims, act=act)
-        self.gru_customized_layer = DynamicGRU(emb_dim * 2, emb_dim * 2)
+        self.gru_customized_layer = DynamicGRU(emb_dim, emb_dim)
+        self.output_layer = nn.Sequential(
+            nn.Linear(emb_dim * 4 + user_emb_dim, predict_dims[0]),
+            nn.ReLU(),
+            nn.Linear(predict_dims[0], predict_dims[1]),
+            nn.ReLU(),
+            nn.Linear(predict_dims[1], 1),
+            nn.Sigmoid(),
+        )
 
     def forward(
         self,
@@ -245,13 +258,17 @@ class DIEN(nn.Module):
         Returns:
             _description_
         """
-        item_historical_embedding_sum = torch.matmul(
-            mask.unsqueeze(dim=1), item_historical_embedding
-        ).squeeze() / sequential_length.unsqueeze(dim=1)
+        item_historical_embedding_masked = (
+            item_historical_embedding * mask.unsqueeze(-1).float()
+        )
+        item_historical_embedding_sum = item_historical_embedding_masked.sum(1)
+        item_historical_embedding_sum = (
+            item_historical_embedding_sum / sequential_length.unsqueeze(-1)
+        )
 
         output_based_gru, _ = self.gru_based_layer(item_historical_embedding)
         attention_scores = self.attention_layer(
-            item_embedding, output_based_gru, mask, return_scores=True
+            item_embedding, output_based_gru, mask
         )
         output_customized_gru = self.gru_customized_layer(
             output_based_gru, attention_scores
@@ -263,11 +280,12 @@ class DIEN(nn.Module):
 
         combination = torch.cat(
             [
-                user_embedding,
-                item_embedding,
-                item_historical_embedding_sum,
-                item_embedding * item_historical_embedding_sum,
-                attention_feature,
+                user_embedding,  # [batch_size, user_emb_dim]
+                item_embedding,  # [batch_size, item_emb_dim]
+                item_historical_embedding_sum,  # [batch_size, item_emb_dim]
+                item_embedding
+                * item_historical_embedding_sum,  # [batch_size, item_emb_dim]
+                attention_feature,  # [batch_size, item_emb_dim]
             ],
             dim=1,
         )
@@ -279,15 +297,33 @@ class DIEN(nn.Module):
 
 if __name__ == "__main__":
     emb_dim = 10
-    hidden_dimss = [20, 30]
-    attn_model = AttentionLayer(emb_dim, hidden_dimss, return_score=True)
+    hidden_dims = [20, 30]
+    attn_model = AttentionLayer(emb_dim, hidden_dims, return_score=True)
     batch_size = 2
     seq_length = 5
     emb_dim = 10
     query = torch.randn(batch_size, emb_dim)
     fact = torch.randn(batch_size, seq_length, emb_dim)
     mask = torch.randn(batch_size, seq_length) > 0
-
+    user_emb_dim = emb_dim * 5
+    model = DIEN(
+        user_emb_dim=user_emb_dim, emb_dim=emb_dim, hidden_dims=hidden_dims, act="relu"
+    )
     # 运行 forward 方法
-    weighted_facts = attn_model.forward(query, fact, mask)
-    print(weighted_facts.shape)
+    # weighted_facts = attn_model.forward(query, fact, mask)
+    # print(weighted_facts.shape)
+    user_embedding: torch.Tensor = torch.randn(batch_size, user_emb_dim)
+    item_historical_embedding: torch.Tensor = torch.randn(
+        batch_size, seq_length, emb_dim
+    )
+    item_embedding: torch.Tensor = torch.randn(batch_size, emb_dim)
+    mask: torch.Tensor = torch.randint(0, 2, (batch_size, seq_length))
+    sequential_length: torch.Tensor = torch.randint(1, seq_length, (batch_size,))
+    y = model(
+        user_embedding,
+        item_historical_embedding,
+        item_embedding,
+        mask,
+        sequential_length,
+    )
+    print(y.shape)
