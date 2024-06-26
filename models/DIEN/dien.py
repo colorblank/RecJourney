@@ -207,27 +207,52 @@ class AttentionLayer(nn.Module):
             return torch.einsum("bt,btd->bd", attn_weights, keys)
 
 
+class PredictHead(nn.Module):
+    def __init__(
+        self,
+        dim_in: int,
+        hidden_dims: List[int],
+        out_dim: int = 1,
+        act: str = "sigmoid",
+        bias: bool = True,
+    ) -> None:
+        super().__init__()
+        predict_head_dims = [dim_in] + hidden_dims + [out_dim]
+        fcs = []
+        for i, dims in enumerate(zip(predict_head_dims[:-1], predict_head_dims[1:])):
+            din, dout = dims
+            activation = "sigmoid" if i != len(predict_head_dims) - 1 else act
+            fc = LinearAct(din, dout, bias, activation)
+            fcs.append(fc)
+        self.fc = nn.Sequential(*fcs)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.fc(x)
+
+
 class DIEN(nn.Module):
     def __init__(
         self,
         user_emb_dim: int,
         emb_dim: int,
-        hidden_dims: List[int] = [80, 40],
+        hidden_dims: List[int],
+        predict_head_dims: List[int],
+        num_classes: int = 1,
         act: str = "relu",
-        predict_dims: List[int] = [80, 40],
+        bias: bool = True,
     ):
         super().__init__()
 
         self.gru_based_layer = nn.GRU(emb_dim, emb_dim, batch_first=True)
         self.attention_layer = AttentionLayer(emb_dim, hidden_dims=hidden_dims, act=act)
         self.gru_customized_layer = DynamicGRU(emb_dim, emb_dim)
-        self.output_layer = nn.Sequential(
-            nn.Linear(emb_dim * 4 + user_emb_dim, predict_dims[0]),
-            nn.ReLU(),
-            nn.Linear(predict_dims[0], predict_dims[1]),
-            nn.ReLU(),
-            nn.Linear(predict_dims[1], 1),
-            nn.Sigmoid(),
+
+        self.predict_head = PredictHead(
+            dim_in=emb_dim * 4 + user_emb_dim,
+            hidden_dims=predict_head_dims,
+            out_dim=num_classes,
+            bias=bias,
+            act=act,
         )
 
     def forward(
@@ -267,9 +292,7 @@ class DIEN(nn.Module):
         )
 
         output_based_gru, _ = self.gru_based_layer(item_historical_embedding)
-        attention_scores = self.attention_layer(
-            item_embedding, output_based_gru, mask
-        )
+        attention_scores = self.attention_layer(item_embedding, output_based_gru, mask)
         output_customized_gru = self.gru_customized_layer(
             output_based_gru, attention_scores
         )
@@ -290,7 +313,7 @@ class DIEN(nn.Module):
             dim=1,
         )
 
-        scores = self.output_layer(combination)
+        scores = self.predict_head(combination)
 
         return scores.squeeze()
 
@@ -307,11 +330,13 @@ if __name__ == "__main__":
     mask = torch.randn(batch_size, seq_length) > 0
     user_emb_dim = emb_dim * 5
     model = DIEN(
-        user_emb_dim=user_emb_dim, emb_dim=emb_dim, hidden_dims=hidden_dims, act="relu"
+        user_emb_dim=user_emb_dim,
+        emb_dim=emb_dim,
+        hidden_dims=hidden_dims,
+        predict_head_dims=hidden_dims,
+        act="relu",
     )
-    # 运行 forward 方法
-    # weighted_facts = attn_model.forward(query, fact, mask)
-    # print(weighted_facts.shape)
+
     user_embedding: torch.Tensor = torch.randn(batch_size, user_emb_dim)
     item_historical_embedding: torch.Tensor = torch.randn(
         batch_size, seq_length, emb_dim
