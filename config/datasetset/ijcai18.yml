@@ -1,0 +1,442 @@
+train_set:
+  set_name: "train"
+  file_type: "csv"
+  data_path: data/train/train.csv
+  sep: "\t"
+  chunksize: 2048
+  header: 0
+  label_columns:
+    - is_trade
+  names:
+    - instance_id
+    - item_id
+    - item_category_list
+    - item_property_list
+    - item_brand_id
+    - item_city_id
+    - item_price_level
+    - item_sales_level
+    - item_collected_level
+    - item_pv_level
+    - user_id
+    - user_gender_id
+    - user_age_level
+    - user_occupation_id
+    - user_star_level
+    - context_id
+    - context_timestamp
+    - context_page_id
+    - predict_category_property
+    - shop_id
+    - shop_review_num_level
+    - shop_review_positive_rate
+    - shop_star_level
+    - shop_score_service
+    - shop_score_delivery
+    - shop_score_description
+    - is_trade
+
+val_set:
+  set_name: "val"
+  file_type: "csv"
+  data_path: data/val/val.csv
+  sep: "\t"
+  # chunksize: 2048
+  header: 0
+  label_columns:
+    - is_trade
+  names:
+    - instance_id
+    - item_id
+    - item_category_list
+    - item_property_list
+    - item_brand_id
+    - item_city_id
+    - item_price_level
+    - item_sales_level
+    - item_collected_level
+    - item_pv_level
+    - user_id
+    - user_gender_id
+    - user_age_level
+    - user_occupation_id
+    - user_star_level
+    - context_id
+    - context_timestamp
+    - context_page_id
+    - predict_category_property
+    - shop_id
+    - shop_review_num_level
+    - shop_review_positive_rate
+    - shop_star_level
+    - shop_score_service
+    - shop_score_delivery
+    - shop_score_description
+    - is_trade
+
+test_set:
+  set_name: "test"
+  file_type: "csv"
+  data_path: data/test/test.csv
+  sep: "\t"
+  # chunksize: 2048
+  label_columns:
+    - is_trade
+  names:
+    - instance_id
+    - item_id
+    - item_category_list
+    - item_property_list
+    - item_brand_id
+    - item_city_id
+    - item_price_level
+    - item_sales_level
+    - item_collected_level
+    - item_pv_level
+    - user_id
+    - user_gender_id
+    - user_age_level
+    - user_occupation_id
+    - user_star_level
+    - context_id
+    - context_timestamp
+    - context_page_id
+    - predict_category_property
+    - shop_id
+    - shop_review_num_level
+    - shop_review_positive_rate
+    - shop_star_level
+    - shop_score_service
+    - shop_score_delivery
+    - shop_score_description
+    - is_trade
+
+pipelines:
+  - col_in: user_id
+    col_out: user_id_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 220000
+    source: user
+    ops:
+      - str_hash:
+          num_embeddings: 220000
+  - col_in: item_id
+    col_out: item_id_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 20000
+    source: item
+    ops:
+      - str_hash:
+          num_embeddings: 20000
+  - col_in: item_category_list
+    col_out: item_category_list_emb
+    fillna: "null"
+    tensor_type: int #
+    feature_type: varlen_sparse
+    num_embeddings: 48
+    source: item
+    ops:
+      - str_to_list:
+          sep: ;
+      - padding:
+          max_len: 3
+          padding_value: "null"
+      - list_hash:
+          num_embeddings: 48
+  - col_in: item_property_list
+    col_out: item_property_list_emb
+    fillna: "null"
+    tensor_type: int #
+    feature_type: varlen_sparse
+    num_embeddings: 90000
+    source: item
+    ops:
+      - str_to_list:
+          sep: ;
+      - padding:
+          max_len: 3
+          padding_value: "null"
+      - list_hash:
+          num_embeddings: 90000
+  - col_in: item_brand_id
+    col_out: item_brand_id_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 4000
+    source: item
+    ops:
+      - str_hash:
+          num_embeddings: 4000
+  - col_in: item_city_id
+    col_out: item_city_id_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 400
+    source: item
+    ops:
+      - str_hash:
+          num_embeddings: 400
+  - col_in: item_price_level
+    col_out: item_price_level_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 40
+    source: item
+    ops:
+      - str_hash:
+          num_embeddings: 40
+  - col_in: item_sales_level
+    col_out: item_sales_level_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 40
+    source: item
+    ops:
+      - str_hash:
+          num_embeddings: 40
+  - col_in: item_collected_level
+    col_out: item_collected_level_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 40
+    source: item
+    ops:
+      - str_hash:
+          num_embeddings: 40
+  - col_in: item_pv_level
+    col_out: item_pv_level_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 40
+    source: item
+    ops:
+      - str_hash:
+          num_embeddings: 40
+  - col_in: user_gender_id
+    col_out: user_gender_id_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 40
+    source: user
+    ops:
+      - str_hash:
+          num_embeddings: 40
+  - col_in: user_age_level
+    col_out: user_age_level_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 20
+    source: user
+    ops:
+      - str_hash:
+          num_embeddings: 20
+  - col_in: user_occupation_id
+    col_out: user_occupation_id_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 20
+    source: user
+    ops:
+      - str_hash:
+          num_embeddings: 20
+  - col_in: user_star_level
+    col_out: user_star_level_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 20
+    source: user
+    ops:
+      - str_hash:
+          num_embeddings: 20
+  - col_in: context_timestamp
+    col_out: month
+    dtype: int # dataframe type
+    fillna: 1537501846
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 24
+    source: context
+    ops:
+      - int_to_date: {}
+      - get_month: {}
+      - str_hash:
+          num_embeddings: 20
+  - col_in: context_timestamp
+    col_out: day
+    dtype: int # dataframe type
+    fillna: 1537501846
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 60
+    source: context
+    ops:
+      - int_to_date: {}
+      - get_day: {}
+      - str_hash:
+          num_embeddings: 60
+  - col_in: context_timestamp
+    col_out: hour
+    dtype: int # dataframe type
+    fillna: 1537501846
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 48
+    source: context
+    ops:
+      - int_to_date: {}
+      - get_hour: {}
+      - str_hash:
+          num_embeddings: 48
+  - col_in: context_timestamp
+    col_out: minute
+    dtype: int # dataframe type
+    fillna: 1537501846
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 48
+    source: context
+    ops:
+      - int_to_date: {}
+      - get_minute: {}
+      - str_hash:
+          num_embeddings: 48
+  - col_in: context_timestamp
+    col_out: weekday
+    dtype: int # dataframe type
+    fillna: 1537501846
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 48
+    source: context
+    ops:
+      - int_to_date: {}
+      - isoweekday: {}
+      - str_hash:
+          num_embeddings: 14
+  - col_in: context_page_id
+    col_out: context_page_id_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 40
+    source: context
+    ops:
+      - str_hash:
+          num_embeddings: 40
+
+  - col_in: shop_id
+    col_out: shop_id_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 5000
+    source: item
+    ops:
+      - str_hash:
+          num_embeddings: 5000
+  - col_in: shop_review_num_level
+    col_out: shop_review_num_level_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 50
+    source: item
+    ops:
+      - str_hash:
+          num_embeddings: 50
+  - col_in: shop_review_positive_rate
+    col_out: shop_review_positive_rate_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: float #
+    feature_type: dense
+    source: item
+    ops:
+      - clip:
+          min_value: 0
+          max_value: 1
+      - log1p: {}
+  - col_in: shop_star_level
+    col_out: shop_star_level_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: int #
+    feature_type: sparse
+    num_embeddings: 50
+    source: item
+    ops:
+      - str_hash:
+          num_embeddings: 50
+  - col_in: shop_score_service
+    col_out: shop_score_service_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: float #
+    feature_type: dense
+    source: item
+    ops:
+      - clip:
+          min_value: 0
+          max_value: 1
+      - log1p: {}
+  - col_in: shop_score_delivery
+    col_out: shop_score_delivery_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: float #
+    feature_type: dense
+    source: item
+    ops:
+      - clip:
+          min_value: 0
+          max_value: 1
+      - log1p: {}
+  - col_in: shop_score_description
+    col_out: shop_score_description_emb
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: float #
+    feature_type: dense
+    source: item
+    ops:
+      - clip:
+          min_value: 0
+          max_value: 1
+      - log1p: {}
+  - col_in: is_trade
+    col_out: is_trade
+    dtype: int # dataframe type
+    fillna: 0
+    tensor_type: float #
+    feature_type: sparse
+    source: label
+    ops: {}
