@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from typing import Literal, Dict
+from typing import Literal
 
 
 class BridgeLayer(nn.Module):
@@ -134,12 +134,6 @@ class EDCN(nn.Module):
 
 if __name__ == "__main__":
     x_deep = torch.randn(2, 25, 8)
-    model = EDCN(
-        field_num=25,
-        emb_dim=8,
-        total_emb_dim=200,
-        layer_num=3,
-        num_classes=1
-    )
+    model = EDCN(field_num=25, emb_dim=8, total_emb_dim=200, layer_num=3, num_classes=1)
     y = model(x_deep)
     print(y)
