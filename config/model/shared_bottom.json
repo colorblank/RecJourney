@@ -1,0 +1,17 @@
+{
+    "dim_in": null,
+    "dim_out": 64,
+    "dim_hidden": [
+        32,
+        64
+    ],
+    "dims": [
+        64,
+        64,
+        1
+    ],
+    "task_num": 1,
+    "dropout": 0.1,
+    "activation": "relu",
+    "bias": true
+}
