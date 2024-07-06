@@ -148,7 +148,7 @@ class BaseTrainer(nn.Module):
     def _calculate_loss(
         self,
         y_pred: Union[List[torch.Tensor], torch.Tensor],
-        y_true: Union[List[torch.Tensor], torch.Tensor],
+        y_true: Dict[str, torch.Tensor],
     ) -> torch.Tensor:
         """
         根据预测值与真实标签计算并返回损失值。
@@ -175,11 +175,12 @@ class BaseTrainer(nn.Module):
         # 判断y_pred是否为张量列表
         elif isinstance(y_pred, list):
             # 对y_pred中每一项计算损失后累加得到总损失
-            total_loss = sum(
-                self.loss_fn(pred, y_true[key].float())
-                for key, pred in zip(y_true, y_pred)
-            )
-            return total_loss
+            i = 0
+            loss = 0
+            for _, y_t in y_true.items():
+                loss = loss + self.loss_fn(y_pred[i], y_t)
+                i+=1
+            return loss
         else:
             # 抛出异常，表示y_pred类型不受支持
             raise NotImplementedError("不支持的y_pred类型。")
@@ -246,13 +247,15 @@ class BaseTrainer(nn.Module):
         # 前向传播，获取预测结果
         y_pred = self.forward(x)
         # 计算损失
-        loss = self._calculate_loss(y_pred, y)
+        loss = self._calculate_loss(y_pred,y)
         # 反向传播，计算梯度
         loss.backward()
 
         # 如果预测结果是列表且当前数据块是日志记录间隔的倍数，则计算并记录指标
         if (chunk_index + 1) % self.log_interval == 0:
             # 从预测结果和目标中提取需要计算指标的部分
+            if isinstance(y_pred, list) and len(y_pred) == 1:
+                y_pred = y_pred[0]
             acc, auc, logloss = self.cal_metric(y_pred, y[list(y.keys())[0]])
             # 记录当前数据块的指标
             self._log_metrics(
