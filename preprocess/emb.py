@@ -34,3 +34,15 @@ def build_emb_dict(cfg: Config, emb_dim: int, device: str = "cpu") -> nn.ModuleD
     # 返回包含所有嵌入层的字典
     return embedding_dict
 
+
+def cal_feat_dim_in(cfg: Config, emb_dim: int):
+    dim = 0
+    for pipeline in cfg.pipelines:
+        # 获取当前管道处理的特征类型
+        feature_type = pipeline.feature_type
+        # 如果特征类型以"sparse"结尾，表示该特征是稀疏的，需要创建嵌入层
+        if feature_type.endswith("sparse") and pipeline.source != "label":
+            dim += emb_dim
+        elif feature_type == "dense":
+            dim += 1
+    return dim
