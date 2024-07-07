@@ -191,6 +191,14 @@ class FiBiNet(nn.Module):
         self.fcs = nn.Sequential(*fcs)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """_summary_
+
+        Arguments:
+            x -- shape (batch_size, num_fields, emb_dim)
+
+        Returns:
+            torch.Tensor -- shape (batch_size, num_classes)
+        """        
         f1 = self.bilinear_layer_1(x)  # (batch_size, fields*(fields-1)/2, emb_dim)
         f2 = self.selayer(x)  # (batch_size, fields, emb_dim)
         f2 = self.bilinear_layer_2(f2)  # (batch_size, fields*(fields-1)/2, emb_dim)
