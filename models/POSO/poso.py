@@ -51,6 +51,7 @@ class FCBlock(nn.Module):
         dropout: float = 0.0,
         norm: str = "none",
     ) -> None:
+        super().__init__()
         self.linear = nn.Linear(dim_in, dim_out, bias)
         if activation == "relu":
             self.act = nn.ReLU(inplace=True)
@@ -91,8 +92,17 @@ class POSOLinear(nn.Module):
         )
 
     def forward(self, x: Tensor) -> list[Tensor]:
+        """
+
+        Arguments:
+            x -- Tensor. size = (batch_size, dim_in)
+
+        Returns:
+            List[Tensor].
+             - size = (batch_size, dim_i)
+        """
         res = []
-        for layer in self.linear:
+        for layer in self.linears:
             f = layer(x)
             res.append(f)
         return res
@@ -112,3 +122,6 @@ if __name__ == "__main__":
     model = MultiHeadAttention(dim, dim, 4)
     z = model(x_non, x_seq)
     print(z.size())
+    model = POSOLinear(dim, [dim // 2, dim // 4])
+    z = model(x_non)
+    print([f.size() for f in z])
