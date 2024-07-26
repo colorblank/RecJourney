@@ -57,14 +57,17 @@ class CoActionUnit(nn.Module):
         for o in range(self.orders):
             hh = his_items ** (o + 1)
             h_i = hh
+            prev_dim = 0
             for i in range(1, len(self.dims)):
-                dim_in, dim_out = self.dims[i - 1], self.dims[i]
-                weight = ad[:, (i - 1) * dim_in * dim_out : i * dim_in * dim_out]
-                weight = weight.view(-1, dim_in, dim_out)
+                start = prev_dim
+                end = prev_dim + self.dims[i] * self.dims[i - 1]
+                weight = ad[:, start:end]
+                weight = weight.view(-1, self.dims[i - 1], self.dims[i])
                 h_i = torch.matmul(h_i, weight)  # (batch, seq, dim_out)
                 if i != len(self.dims) - 1:
                     h_i = torch.tanh(h_i)
                 out.append(h_i)
+                prev_dim = end
 
         res = torch.cat(out, dim=2)  # (batch, seq, (d1+d2)*orders)
 
