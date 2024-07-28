@@ -70,7 +70,6 @@ class DCNV2(nn.Module):
         mode: Literal["stack", "parallel"] = "parallel",
         num_classes: int = 1,
         bias: bool = True,
-        act: str = "relu",
     ) -> None:
         super().__init__()
         self.mode = mode
@@ -86,6 +85,17 @@ class DCNV2(nn.Module):
         self.predict_head = nn.Linear(out_dim, num_classes, bias)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """_summary_
+
+        Arguments:
+            x -- torch.Tensor. size = (batch_size, dim_in)
+
+        Raises:
+            ValueError: _description_
+
+        Returns:
+            torch.Tensor: size = (batch_size, num_classes)
+        """
         f_cross = self.cross_net(x)
         if self.mode == "stack":
             f_deep = self.deep_net(f_cross)
