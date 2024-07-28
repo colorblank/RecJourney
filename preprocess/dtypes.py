@@ -1,7 +1,7 @@
 import importlib
 from dataclasses import dataclass, field
 from functools import partial
-from typing import Any, Callable, Dict, List, Literal, Optional, Union, Tuple
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
 DTYPES = Literal["int", "float"]
 SOURCES = Literal["user", "item", "context", "label"]

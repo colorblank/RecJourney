@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class GatedCrossNetwork(nn.Module):
@@ -11,10 +12,10 @@ class GatedCrossNetwork(nn.Module):
     - layer_num: 层数，默认为3。
 
     input:
-    - torch.Tensor (batch_size, dim_in)
+    - Tensor (batch_size, dim_in)
 
     Returns:
-    - torch.Tensor (batch_size, dim_in)
+    - Tensor (batch_size, dim_in)
     """
 
     def __init__(self, dim_in: int, layer_num: int = 3) -> None:
@@ -32,14 +33,14 @@ class GatedCrossNetwork(nn.Module):
         for i in range(layer_num):
             nn.init.uniform_(self.b[i].data)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """_summary_
 
         Arguments:
-            x -- torch.Tensor (batch_size, dim_in)
+            x -- Tensor (batch_size, dim_in)
 
         Returns:
-            torch.Tensor (batch_size, dim_in)
+            Tensor (batch_size, dim_in)
         """
         xi = x
         for i in range(self.layer_num):

@@ -1,6 +1,8 @@
+from dataclasses import dataclass
+
 import torch
 import torch.nn as nn
-from dataclasses import dataclass
+from torch import Tensor
 
 
 @dataclass
@@ -39,7 +41,7 @@ class DNN(nn.Module):
             else nn.Identity()
         )
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: Tensor):
         x = self.fc_in(x)
         x = self.fc_hiddens(x)
         x = self.fc_out(x)
@@ -54,7 +56,7 @@ class Predictor(nn.Module):
             nn.Sigmoid() if use_sigmoid else nn.Identity(),
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         return self.pred(x)
 
 
@@ -86,14 +88,14 @@ class LHUC(nn.Module):
 
         self.predict = Predictor(user_args.dim_out, predict_dim, use_sigmoid)
 
-    def _cross(self, x_i: torch.Tensor, x_u: torch.Tensor) -> torch.Tensor:
+    def _cross(self, x_i: Tensor, x_u: Tensor) -> Tensor:
         # element-wise multiplication
         out = x_i * x_u
         return out
 
     def forward(
-        self, item_input: torch.Tensor, user_input: torch.Tensor
-    ) -> torch.Tensor:
+        self, item_input: Tensor, user_input: Tensor
+    ) -> Tensor:
         x_i = self.item_branch.fc_in(item_input)
         x_u = self.user_branch.fc_in(user_input)
         x_i = self._cross(x_i, x_u)

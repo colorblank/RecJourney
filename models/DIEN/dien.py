@@ -2,6 +2,7 @@ from typing import List
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class LinearAct(nn.Module):
@@ -19,7 +20,7 @@ class LinearAct(nn.Module):
         else:
             raise NotImplementedError(f"{act} is not implemented")
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         return self.act(self.linear(x))
 
 
@@ -36,7 +37,7 @@ class GRU(nn.Module):
             nn.Linear(dim_in + dim_hidden, dim_hidden, bias=bias), nn.Tanh()
         )
 
-    def forward(self, x: torch.Tensor, h: torch.Tensor = None):
+    def forward(self, x: Tensor, h: Tensor = None):
         if h is None:
             h = torch.zeros_like(x).to(x.device)
         u = self.update_gate(torch.cat([x, h], dim=-1))
@@ -62,8 +63,8 @@ class AUGRUCell(nn.Module):
         )
 
     def forward(
-        self, X: torch.Tensor, h_prev: torch.Tensor, attention_score: torch.Tensor
-    ) -> torch.Tensor:
+        self, X: Tensor, h_prev: Tensor, attention_score: Tensor
+    ) -> Tensor:
         """_summary_
 
         Arguments:
@@ -93,8 +94,8 @@ class DynamicGRU(nn.Module):
         self.rnn_cell = AUGRUCell(dim_in, dim_hidden, bias=bias)
 
     def forward(
-        self, X: torch.Tensor, attenion_scores: torch.Tensor, h0: torch.Tensor = None
-    ) -> torch.Tensor:
+        self, X: Tensor, attenion_scores: Tensor, h0: Tensor = None
+    ) -> Tensor:
         """_summary_
 
         Arguments:
@@ -143,7 +144,7 @@ class ActivationUnit(nn.Module):
             ]
         )
 
-    def forward(self, x_hist: torch.Tensor, x_cand: torch.Tensor) -> torch.Tensor:
+    def forward(self, x_hist: Tensor, x_cand: Tensor) -> Tensor:
         """_summary_
 
         Arguments:
@@ -154,7 +155,7 @@ class ActivationUnit(nn.Module):
                 shape: [batch_size, dim]
 
         Returns:
-            torch.Tensor, size: [batch_size, seq_len, 1]
+            Tensor, size: [batch_size, seq_len, 1]
         """
         seq_len = x_hist.shape[1]
         x_cand = x_cand.unsqueeze(1).expand(-1, seq_len, -1)
@@ -179,19 +180,19 @@ class AttentionLayer(nn.Module):
 
     def forward(
         self,
-        query: torch.Tensor,
-        keys: torch.Tensor,
-        mask: torch.Tensor = None,
-    ) -> torch.Tensor:
+        query: Tensor,
+        keys: Tensor,
+        mask: Tensor = None,
+    ) -> Tensor:
         """_summary_
 
         Args:
-            query (torch.Tensor): size = (batch_size, dim)
-            keys (torch.Tensor): size = (batch_size, seq_len, dim)
-            mask (torch.Tensor, optional): size = (batch_size, seq_len). Defaults to None.
+            query (Tensor): size = (batch_size, dim)
+            keys (Tensor): size = (batch_size, seq_len, dim)
+            mask (Tensor, optional): size = (batch_size, seq_len). Defaults to None.
 
         Returns:
-            torch.Tensor: size = (batch_size, seq_len)
+            Tensor: size = (batch_size, seq_len)
         """
         attention_score = self.local_attn(keys, query)  # [batch_size, seq_len, 1]
 
@@ -226,7 +227,7 @@ class PredictHead(nn.Module):
             fcs.append(fc)
         self.fc = nn.Sequential(*fcs)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         return self.fc(x)
 
 
@@ -257,11 +258,11 @@ class DIEN(nn.Module):
 
     def forward(
         self,
-        user_embedding: torch.Tensor,
-        item_historical_embedding: torch.Tensor,
-        item_embedding: torch.Tensor,
-        mask: torch.Tensor,
-        sequential_length: torch.Tensor,
+        user_embedding: Tensor,
+        item_historical_embedding: Tensor,
+        item_embedding: Tensor,
+        mask: Tensor,
+        sequential_length: Tensor,
     ):
         """_summary_
 
@@ -337,13 +338,13 @@ if __name__ == "__main__":
         act="relu",
     )
 
-    user_embedding: torch.Tensor = torch.randn(batch_size, user_emb_dim)
-    item_historical_embedding: torch.Tensor = torch.randn(
+    user_embedding: Tensor = torch.randn(batch_size, user_emb_dim)
+    item_historical_embedding: Tensor = torch.randn(
         batch_size, seq_length, emb_dim
     )
-    item_embedding: torch.Tensor = torch.randn(batch_size, emb_dim)
-    mask: torch.Tensor = torch.randint(0, 2, (batch_size, seq_length))
-    sequential_length: torch.Tensor = torch.randint(1, seq_length, (batch_size,))
+    item_embedding: Tensor = torch.randn(batch_size, emb_dim)
+    mask: Tensor = torch.randint(0, 2, (batch_size, seq_length))
+    sequential_length: Tensor = torch.randint(1, seq_length, (batch_size,))
     y = model(
         user_embedding,
         item_historical_embedding,

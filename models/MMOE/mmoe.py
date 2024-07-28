@@ -3,6 +3,7 @@ from typing import List, Optional
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class LinearReLUDropOut(nn.Module):
@@ -38,15 +39,15 @@ class LinearReLUDropOut(nn.Module):
         else:
             self.dropout = nn.Dropout(p)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         前向传播过程。
 
         参数:
-            x (torch.Tensor): 输入的张量。
+            x (Tensor): 输入的张量。
 
         返回:
-            torch.Tensor: 经过线性层、ReLU激活函数和dropout后的输出张量。
+            Tensor: 经过线性层、ReLU激活函数和dropout后的输出张量。
         """
         # 应用线性层，然后是ReLU激活函数，最后是dropout
         return self.dropout(self.act(self.linear(x)))
@@ -86,15 +87,15 @@ class Expert(nn.Module):
             ]
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         前向传播函数。
 
         参数:
-        - x: torch.Tensor, 输入的张量
+        - x: Tensor, 输入的张量
 
         返回:
-        - torch.Tensor, 经过模型处理后的输出张量
+        - Tensor, 经过模型处理后的输出张量
         """
         return self.expert(x)
 
@@ -124,7 +125,7 @@ class PredictHead(nn.Module):
             layers.append(layer)
         self.layers = nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         return self.layers(x)
 
 
@@ -190,7 +191,7 @@ class SharedBottomModel(nn.Module):
         )
         self.task_num = task_num
 
-    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+    def forward(self, x: Tensor) -> List[Tensor]:
         x = self.bottom(x)
         res = []
         for i in range(self.task_num):
@@ -258,15 +259,15 @@ class Multi_Gate_MOE(nn.Module):
             {f"gate_{i}": Gate(dim_in, expert_num, bias) for i in range(task_num)}
         )
 
-    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+    def forward(self, x: Tensor) -> List[Tensor]:
         """
         前向传播函数。
 
         参数:
-        - x: torch.Tensor, 输入张量
+        - x: Tensor, 输入张量
 
         返回:
-        - out: List[torch.Tensor], 包含每个任务的加权专家输出的列表
+        - out: List[Tensor], 包含每个任务的加权专家输出的列表
         """
         feats = list()  # 存储每个专家的输出
         for i in range(self.expert_num):
@@ -298,7 +299,7 @@ class MMOE(nn.Module):
             }
         )
 
-    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+    def forward(self, x: Tensor) -> List[Tensor]:
         feats = self.mmoe(x)
         outs = list()
         for i in range(self.task_num):

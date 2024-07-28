@@ -1,6 +1,8 @@
+from dataclasses import dataclass
+
 import torch
 import torch.nn as nn
-from dataclasses import dataclass
+from torch import Tensor
 
 
 @dataclass
@@ -34,7 +36,7 @@ class ActivationUnit(nn.Module):
             nn.Linear(dim_hidden, dim_out),
         )
 
-    def forward(self, x_hist: torch.Tensor, x_cand: torch.Tensor) -> torch.Tensor:
+    def forward(self, x_hist: Tensor, x_cand: Tensor) -> Tensor:
         """_summary_
 
         Arguments:
@@ -45,7 +47,7 @@ class ActivationUnit(nn.Module):
                 shape: [batch_size, dim]
 
         Returns:
-            torch.Tensor, size: [batch_size, seq_len, 1]
+            Tensor, size: [batch_size, seq_len, 1]
         """
         seq_len = x_hist.shape[1]
         x_cand = x_cand.unsqueeze(1).expand(-1, seq_len, -1)
@@ -80,11 +82,11 @@ class DIN(nn.Module):
 
     def forward(
         self,
-        x_profile: torch.Tensor,
-        x_hist: torch.Tensor,
-        x_cand: torch.Tensor,
-        x_context: torch.Tensor,
-    ) -> torch.Tensor:
+        x_profile: Tensor,
+        x_hist: Tensor,
+        x_cand: Tensor,
+        x_context: Tensor,
+    ) -> Tensor:
         """_summary_
 
         Arguments:

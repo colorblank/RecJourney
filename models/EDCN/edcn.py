@@ -1,7 +1,8 @@
+from typing import Literal
+
 import torch
 import torch.nn as nn
-
-from typing import Literal
+from torch import Tensor
 
 
 class BridgeLayer(nn.Module):
@@ -29,7 +30,7 @@ class BridgeLayer(nn.Module):
                 nn.ReLU(inplace=True),
             )
 
-    def forward(self, x_deep: torch.Tensor, x_cross: torch.Tensor) -> torch.Tensor:
+    def forward(self, x_deep: Tensor, x_cross: Tensor) -> Tensor:
         if self.mode == "add":
             return x_deep + x_cross
         elif self.mode == "product":
@@ -49,7 +50,7 @@ class RegularizationLayer(nn.Module):
         self.tau = tau
         self.w = nn.Parameter(torch.randn(field_num, 1))
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         if len(x.size()) == 2:
             x = x.view(x.size(0), self.field_num, -1)
         g = torch.softmax(self.w.unsqueeze(0) / self.tau, dim=1)  # [1, field_num, 1]
@@ -114,7 +115,7 @@ class EDCN(nn.Module):
 
         self.predict_head = nn.Linear(3 * total_emb_dim, num_classes, bias)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         x_deep = self.reg_layer_deep[0](x)
         x_cross = self.reg_layer_cross[0](x)
         x_cross_i = x_cross

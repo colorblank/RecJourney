@@ -2,6 +2,7 @@ from itertools import combinations
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class AttentionalFactorizationMachine(nn.Module):
@@ -24,11 +25,11 @@ class AttentionalFactorizationMachine(nn.Module):
         )
         self.fc = nn.Linear(emb_dim, num_classes)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """_summary_
 
         Arguments:
-            x -- torch.Tensor. shape: (batch_size, num_fields, emb_dim)
+            x -- Tensor. shape: (batch_size, num_fields, emb_dim)
 
         Returns:
             _description_

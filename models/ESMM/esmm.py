@@ -2,6 +2,7 @@ from typing import List, Tuple
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class LinearAct(nn.Module):
@@ -39,7 +40,7 @@ class LinearAct(nn.Module):
         # 根据dropout比例初始化dropout模块，如果比例为0，则使用Identity替代
         self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         前向传播。
 
@@ -100,7 +101,7 @@ class DNN(nn.Module):
         # 将层列表封装为ModuleList，方便管理和调用
         self.layers = nn.ModuleList(layers)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         前向传播函数。
 
@@ -146,7 +147,7 @@ class ESMM(nn.Module):
         # 初始化点击率（CTR）的深度神经网络
         self.ctr_dnn = DNN(ctr_dims, bias=bias, act=act, dropout=dropout)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor]:
         """
         定义前向传播过程。
 

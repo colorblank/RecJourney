@@ -1,6 +1,8 @@
 from typing import List, Literal
+
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class LinearReLU(nn.Module):
@@ -43,14 +45,14 @@ class CrossNetwork(nn.Module):
             }
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """_summary_
 
         Args:
-            x (torch.Tensor): size = (batch_size, dim_in)
+            x (Tensor): size = (batch_size, dim_in)
 
         Returns:
-            torch.Tensor: _description_
+            Tensor: _description_
         """
         x_i = x
         # 遍历所有线性ReLU层，进行前向传播
@@ -84,17 +86,17 @@ class DCNV2(nn.Module):
         )
         self.predict_head = nn.Linear(out_dim, num_classes, bias)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """_summary_
 
         Arguments:
-            x -- torch.Tensor. size = (batch_size, dim_in)
+            x -- Tensor. size = (batch_size, dim_in)
 
         Raises:
             ValueError: _description_
 
         Returns:
-            torch.Tensor: size = (batch_size, num_classes)
+            Tensor: size = (batch_size, num_classes)
         """
         f_cross = self.cross_net(x)
         if self.mode == "stack":

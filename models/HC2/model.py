@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import Tensor
 
 
 class IndividualContrastiveLoss(nn.Module):
@@ -11,11 +12,11 @@ class IndividualContrastiveLoss(nn.Module):
 
     def forward(
         self,
-        f_org: torch.Tensor,
-        f_aug: torch.Tensor,
-        f_neg_other: torch.Tensor,
-        f_neg_cross: torch.Tensor,
-    ) -> torch.Tensor:
+        f_org: Tensor,
+        f_aug: Tensor,
+        f_neg_other: Tensor,
+        f_neg_cross: Tensor,
+    ) -> Tensor:
         """_summary_
 
         Arguments:
@@ -63,13 +64,13 @@ class GeneralContrastiveLoss(nn.Module):
 
     def forward(
         self,
-        f_org: torch.Tensor,
-        f_aug: torch.Tensor,
-        f_neg: torch.Tensor,
-        e_org: torch.Tensor,
-        e_pos: torch.Tensor,
-        e_neg: torch.Tensor,
-    ) -> torch.Tensor:
+        f_org: Tensor,
+        f_aug: Tensor,
+        f_neg: Tensor,
+        e_org: Tensor,
+        e_pos: Tensor,
+        e_neg: Tensor,
+    ) -> Tensor:
         sim_neg = torch.einsum(
             "bnd,bnd->bn", e_pos.unsqueeze(1).expand_as(e_neg), e_neg
         )
