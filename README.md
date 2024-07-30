@@ -16,8 +16,8 @@ pip install -r requirements.txt
 | Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate | SIGIR 2018 | https://arxiv.org/pdf/1804.07931 | models/ESMM |
 | Deep Interest Evolution Network for Click-Through Rate Prediction                              | AAAI 2019  | http://arxiv.org/abs/1809.03672  | models/DIEN |
 | Deep Session Interest Network for Click-Through Rate Prediction                                | IJCAI 2019 | http://arxiv.org/abs/1905.06482  | models/DSIN |
-| Behavior Sequence Transformer for E-commerce Recommendation in Alibaba                         | KDD 2019   | http://arxiv.org/abs/1905.06874  |             |
-|                                                                                                |            |                                  |             |
+| Behavior Sequence Transformer for E-commerce Recommendation in Alibaba                         | KDD 2019   | http://arxiv.org/abs/1905.06874  | models/BST  |
+| Hybrid Contrastive Constraints for Multi-Scenario Ad Ranking                                   | CIKM 2023  | https://arxiv.org/abs/2302.02636 | models/HC2  |
 
 ### 谷歌
 
@@ -49,8 +49,40 @@ pip install -r requirements.txt
 | 论文标题                                                                                   | 发表年份  | URL                              | 仓库        |
 | ------------------------------------------------------------------------------------------ | --------- | -------------------------------- | ----------- |
 | HiNet: Novel Multi-Scenario & Multi-Task Learning with Hierarchical Information Extraction | ICDE 2023 | https://arxiv.org/pdf/2303.06095 | model/HiNet |
- 
- ## 3.模型评估
+
+### 微软
+
+| 论文标题                                                                   | 发表年份  | URL                              | 仓库        |
+| -------------------------------------------------------------------------- | --------- | -------------------------------- | ----------- |
+| Towards Deeper, Lighter and Interpretable Cross Network for CTR Prediction | CIKM 2023 | https://arxiv.org/pdf/2311.04635 | models/GDCN |
+
+## 3. 模型
+
+| 模型名称 | 标签 | 进度 |
+| -------- | ---- | ---- |
+| AFM      |      |      |
+| AutoInt  |      |      |
+| BST      |      |      |
+| CAN      |      |      |
+| DCN      |      |      |
+| DIEN     |      |      |
+| DIN      |      |      |
+| DSIN     |      |      |
+| EDCN     |      |      |
+| ESMM     |      |      |
+| FiBiNet  |      |      |
+| FM       |      |      |
+| GDCN     |      |      |
+| HC2      |      |      |
+| HiNet    |      |      |
+| MMOE     |      |      |
+| PEPNet   |      |      |
+| PLE      |      |      |
+| POSO     |      |      |
+| xDeepFM  |      |      |
+
+## 4.模型评估
+
 数据集：IJCAI 18
 
 | 模型名称     | AUC     | LogLoss |
