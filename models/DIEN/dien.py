@@ -62,9 +62,7 @@ class AUGRUCell(nn.Module):
             nn.Linear(in_dim, dim_hidden, bias=bias), nn.Tanh()
         )
 
-    def forward(
-        self, X: Tensor, h_prev: Tensor, attention_score: Tensor
-    ) -> Tensor:
+    def forward(self, X: Tensor, h_prev: Tensor, attention_score: Tensor) -> Tensor:
         """_summary_
 
         Arguments:
@@ -93,9 +91,7 @@ class DynamicGRU(nn.Module):
         self.dim_hidden = dim_hidden
         self.rnn_cell = AUGRUCell(dim_in, dim_hidden, bias=bias)
 
-    def forward(
-        self, X: Tensor, attenion_scores: Tensor, h0: Tensor = None
-    ) -> Tensor:
+    def forward(self, X: Tensor, attenion_scores: Tensor, h0: Tensor = None) -> Tensor:
         """_summary_
 
         Arguments:
@@ -123,8 +119,19 @@ class DynamicGRU(nn.Module):
 class ActivationUnit(nn.Module):
     """from DIN
 
-    Args:
-        nn (_type_): _description_
+    Parameters:
+    - dim_in (int): _description_
+    - hidden_dims (List[int]): _description_
+    - dim_out (int, optional): _description_. Defaults to 1.
+    - act (str, optional): _description_. Defaults to "prelu".
+    - bias (bool, optional): _description_. Defaults to True.
+
+    Input:
+    - x_hist (Tensor): size = (batch_size, seq_len, dim)
+    - x_cand (Tensor): size = (batch_size, dim)
+
+    Returns:
+        Tensor: size = (batch_size, seq_len, 1)
     """
 
     def __init__(
@@ -164,6 +171,25 @@ class ActivationUnit(nn.Module):
 
 
 class AttentionLayer(nn.Module):
+    """_summary_
+
+    Parameters:
+    - emb_dim (int): _description_
+    - hidden_dims (List[int]): _description_
+    - return_score (bool, optional): _description_. Defaults to False.
+    - bias (bool, optional): _description_. Defaults to True.
+    - act (str, optional): _description_. Defaults to "sigmoid".
+    - mask_value (float, optional): _description_. Defaults to -float("inf").
+
+    Input:
+    - query (Tensor): size = (batch_size, dim)
+    - keys (Tensor): size = (batch_size, seq_len, dim)
+    - mask (Tensor, optional): size = (batch_size, seq_len). Defaults to None.
+
+    Returns:
+        Tensor: size = (batch_size, seq_len)
+    """
+
     def __init__(
         self,
         emb_dim: int,
@@ -339,9 +365,7 @@ if __name__ == "__main__":
     )
 
     user_embedding: Tensor = torch.randn(batch_size, user_emb_dim)
-    item_historical_embedding: Tensor = torch.randn(
-        batch_size, seq_length, emb_dim
-    )
+    item_historical_embedding: Tensor = torch.randn(batch_size, seq_length, emb_dim)
     item_embedding: Tensor = torch.randn(batch_size, emb_dim)
     mask: Tensor = torch.randint(0, 2, (batch_size, seq_length))
     sequential_length: Tensor = torch.randint(1, seq_length, (batch_size,))

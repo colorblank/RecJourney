@@ -2,11 +2,13 @@
 
 公司：华为
 
+KDD2021
+
+https://dlp-kdd.github.io/assets/pdf/DLP-KDD_2021_paper_12.pdf
+
 ## 模型结构
 
-
 ![alt text](images/image.png)
-
 
 ### Bridge Module
 
@@ -16,6 +18,7 @@
 - 逐元素乘积：$ \mathbf{f}_l= \mathbf{x}_l  \circ \mathbf{h}_l$
 - 拼接：$ \mathbf{f}_l= \text{ReLU}(\mathbf{W}_l^T \text{concat}(\mathbf{x}_l, \mathbf{h}_l) + \mathbf{b}_l)  $
 - 注意力池化：
+
 $$
 \mathbf{f}_l = a_{l}^x \oplus \mathbf{h}_l,\
 a_{l}^x=\text{softmax}(\mathbf{p}_l^T \text{ReLU}(\mathbf{w}_l^T \mathbf{x}_l + \mathbf{b}_l)) )

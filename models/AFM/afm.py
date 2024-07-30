@@ -6,6 +6,23 @@ from torch import Tensor
 
 
 class AttentionalFactorizationMachine(nn.Module):
+    """
+    Attentional Factorization Machine
+
+    Parameters:
+    - num_fields: int. number of feature fields
+    - emb_dim: int. embedding dimension
+    - attn_dim: int. attention dimension
+    - num_classes: int. number of classes. default: 1
+    - bias: bool. whether to use bias. default: True
+
+    Input:
+    - x: Tensor. shape: (batch_size, num_fields, emb_dim)
+
+    Returns:
+    - y: Tensor. shape: (batch_size, num_classes)
+    """
+
     def __init__(
         self,
         num_fields: int,
