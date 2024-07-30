@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import Tensor
 
 
 @dataclass
@@ -64,7 +65,7 @@ class LinearACT(nn.Module):
         else:
             raise ValueError("Invalid activation function")
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         x = self.fc(x)
         x = self.activation(x)
         x = self.dropout(x)
@@ -91,7 +92,7 @@ class DNN(nn.Module):
             )
         self.fcs = nn.Sequential(*fcs)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         return self.fcs(x)
 
 
@@ -109,7 +110,7 @@ class CompressedInteractionNetwork(nn.Module):
     - x: 输入特征，形状为(batch_size, num_fields, embed_dim)。
 
     Returns:
-    - torch.Tensor: 输出特征，形状为(batch_size, 1)。
+    - Tensor: 输出特征，形状为(batch_size, 1)。
 
     """
 
@@ -142,14 +143,14 @@ class CompressedInteractionNetwork(nn.Module):
             fc_dim_in += prev_dim
         self.fc = nn.Linear(fc_dim_in, num_classes, bias=bias)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """_summary_
 
         Arguments:
-            x -- torch.Tensor. (batch_size, num_fields, embed_dim)
+            x -- Tensor. (batch_size, num_fields, embed_dim)
 
         Returns:
-            torch.Tensor. (batch_size, 1)
+            Tensor. (batch_size, 1)
         """
         xs = list()
         x0, h = x, x
@@ -201,14 +202,14 @@ class xDeepFM(nn.Module):
             nn.Sigmoid(),
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """_summary_
 
         Arguments:
-            x -- torch.Tensor. (batch_size, num_fields, embed_dim)
+            x -- Tensor. (batch_size, num_fields, embed_dim)
 
         Returns:
-            torch.Tensor. (batch_size, 1)
+            Tensor. (batch_size, 1)
         """
         x_linear = x.view(x.size(0), -1)
         x_linear = self.linear(x_linear)

@@ -2,9 +2,27 @@ from itertools import combinations
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class AttentionalFactorizationMachine(nn.Module):
+    """
+    Attentional Factorization Machine
+
+    Parameters:
+    - num_fields: int. number of feature fields
+    - emb_dim: int. embedding dimension
+    - attn_dim: int. attention dimension
+    - num_classes: int. number of classes. default: 1
+    - bias: bool. whether to use bias. default: True
+
+    Input:
+    - x: Tensor. shape: (batch_size, num_fields, emb_dim)
+
+    Returns:
+    - y: Tensor. shape: (batch_size, num_classes)
+    """
+
     def __init__(
         self,
         num_fields: int,
@@ -24,11 +42,11 @@ class AttentionalFactorizationMachine(nn.Module):
         )
         self.fc = nn.Linear(emb_dim, num_classes)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """_summary_
 
         Arguments:
-            x -- torch.Tensor. shape: (batch_size, num_fields, emb_dim)
+            x -- Tensor. shape: (batch_size, num_fields, emb_dim)
 
         Returns:
             _description_

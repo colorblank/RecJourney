@@ -1,8 +1,9 @@
-import torch
-import torch.nn as nn
+from dataclasses import dataclass
 from typing import List
 
-from dataclasses import dataclass
+import torch
+import torch.nn as nn
+from torch import Tensor
 
 
 @dataclass
@@ -49,7 +50,7 @@ class LinearAct(nn.Module):
         else:
             raise NotImplementedError(f"{act} is not implemented")
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         return self.act(self.linear(x))
 
 
@@ -122,15 +123,15 @@ class Expert(nn.Module):
             *[LinearAct(dims[i - 1], dims[i], bias=bias) for i in range(1, len(dims))]
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         前向传播函数。
 
         参数:
-        - x: torch.Tensor, 输入的张量
+        - x: Tensor, 输入的张量
 
         返回:
-        - torch.Tensor, 经过模型处理后的输出张量
+        - Tensor, 经过模型处理后的输出张量
         """
         return self.expert(x)
 
@@ -156,7 +157,7 @@ class SEI(nn.Module):
         # 初始化门控网络，用于权重分配
         self.gate = nn.Linear(dim_in, expert_num)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         前向传播过程
 
@@ -212,7 +213,7 @@ class SharedExpertNet(nn.Module):
             }
         )
 
-    def forward(self, f_main: torch.Tensor):
+    def forward(self, f_main: Tensor):
         """
         前向传播函数。
 
@@ -244,8 +245,8 @@ class SAN(nn.Module):
         self.gate = nn.Linear(scene_dim_in, shared_expert_num, bias)
 
     def forward(
-        self, feats: torch.Tensor, f_scene: torch.Tensor, scene_indicator: torch.Tensor
-    ) -> torch.Tensor:
+        self, feats: Tensor, f_scene: Tensor, scene_indicator: Tensor
+    ) -> Tensor:
         """_summary_
 
         Arguments:
@@ -326,15 +327,15 @@ class CustomizedGateControl(nn.Module):
             }
         )
 
-    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+    def forward(self, x: Tensor) -> List[Tensor]:
         """
         前向传播函数。
 
         参数:
-        - x: torch.Tensor, 输入张量
+        - x: Tensor, 输入张量
 
         返回:
-        - List[torch.Tensor], 包含每个任务特征的列表
+        - List[Tensor], 包含每个任务特征的列表
         """
 
         # 计算共享专家的输出
@@ -417,8 +418,8 @@ class HiNet(nn.Module):
         )
 
     def forward(
-        self, x: torch.Tensor, scene_emb: torch.Tensor, scene_indicator: torch.Tensor
-    ) -> List[torch.Tensor]:
+        self, x: Tensor, scene_emb: Tensor, scene_indicator: Tensor
+    ) -> List[Tensor]:
         """
         前向传播函数，结合特定专家的输出、共享专家的输出、场景嵌入和场景指示器来生成最终结果。
 

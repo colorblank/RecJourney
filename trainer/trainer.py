@@ -1,11 +1,11 @@
-from pathlib import Path
-from typing import Callable, Dict, Optional, Tuple, Union, List
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 import torch
 import torch.nn as nn
 from loguru import logger
 from sklearn.metrics import accuracy_score, log_loss, roc_auc_score
+from torch import Tensor
 
 from preprocess.dtypes import Config, Pipeline
 
@@ -74,8 +74,8 @@ class BaseTrainer(nn.Module):
                 self.val_x_dict[pipe.col_out] = tensor
 
     def evaluation_one_predict(
-        self, y_pred: torch.Tensor, y_true: torch.Tensor, epoch: int
-    ) -> torch.Tensor:
+        self, y_pred: Tensor, y_true: Tensor, epoch: int
+    ) -> Tensor:
         """
         用于评估模型在验证集上的预测结果。
         """
@@ -95,7 +95,7 @@ class BaseTrainer(nn.Module):
                 for i in range(len(y_pred)):
                     y_t = self.val_y_dict[y_true_names[i]]
                     self.evaluation_one_predict(y_pred[i], y_t, epoch)
-            elif isinstance(y_pred, torch.Tensor):
+            elif isinstance(y_pred, Tensor):
                 y_t = self.val_y_dict[y_true_names[0]]
                 self.evaluation_one_predict(y_pred, y_t, epoch)
 
@@ -124,8 +124,8 @@ class BaseTrainer(nn.Module):
         return tensor.to(self.device)
 
     def _preprocess(
-        self, x: Dict[str, torch.Tensor], tensor_op: Optional[Callable] = None
-    ) -> torch.Tensor:
+        self, x: Dict[str, Tensor], tensor_op: Optional[Callable] = None
+    ) -> Tensor:
         if tensor_op is not None:
             x = tensor_op(x)
         else:
@@ -133,11 +133,11 @@ class BaseTrainer(nn.Module):
 
         return x
 
-    def forward(self, x: Dict[str, torch.Tensor]) -> torch.Tensor:
+    def forward(self, x: Dict[str, Tensor]) -> Tensor:
         x = self._preprocess(x)
         return self.base_model(x)
 
-    def cal_metric(self, y_pred: torch.Tensor, y_true: torch.Tensor):
+    def cal_metric(self, y_pred: Tensor, y_true: Tensor):
         y_pred = y_pred.detach().flatten().cpu().numpy()
         y_true = y_true.detach().flatten().cpu().numpy().astype(int)
         auc = roc_auc_score(y_true, y_pred)
@@ -147,9 +147,9 @@ class BaseTrainer(nn.Module):
 
     def _calculate_loss(
         self,
-        y_pred: Union[List[torch.Tensor], torch.Tensor],
-        y_true: Dict[str, torch.Tensor],
-    ) -> torch.Tensor:
+        y_pred: Union[List[Tensor], Tensor],
+        y_true: Dict[str, Tensor],
+    ) -> Tensor:
         """
         根据预测值与真实标签计算并返回损失值。
 
@@ -162,14 +162,14 @@ class BaseTrainer(nn.Module):
         y_true: 真实值，格式与y_pred相同。
 
         返回:
-        torch.Tensor: 总损失值，以单个张量形式返回。
+        Tensor: 总损失值，以单个张量形式返回。
 
         异常:
         NotImplementedError: 若y_pred为不支持的类型。
         """
         """根据预测与真实标签计算并返回损失。"""
         # 判断y_pred是否为张量
-        if isinstance(y_pred, torch.Tensor):
+        if isinstance(y_pred, Tensor):
             # 直接使用损失函数计算损失
             return self.loss_fn(y_pred, y_true[list(y_true.keys())[0]])
         # 判断y_pred是否为张量列表
@@ -179,7 +179,7 @@ class BaseTrainer(nn.Module):
             loss = 0
             for _, y_t in y_true.items():
                 loss = loss + self.loss_fn(y_pred[i], y_t)
-                i+=1
+                i += 1
             return loss
         else:
             # 抛出异常，表示y_pred类型不受支持
@@ -190,7 +190,7 @@ class BaseTrainer(nn.Module):
         epoch: int,  # 当前训练轮次
         chunk_index: int,  # 当前数据块的索引
         sample_count: int,  # 目前为止处理的样本总数
-        loss: torch.Tensor,  # 当前数据块的损失值
+        loss: Tensor,  # 当前数据块的损失值
         metrics: Optional[
             Tuple[float, float, float]
         ] = None,  # 额外指标元组（准确率, AUC, 对数损失）, 默认为None
@@ -221,8 +221,8 @@ class BaseTrainer(nn.Module):
 
     def train_one_chunk(
         self,
-        x: Dict[str, torch.Tensor],
-        y: Dict[str, torch.Tensor],
+        x: Dict[str, Tensor],
+        y: Dict[str, Tensor],
         chunk_index: int,
         chunk_size: int,
         epoch: int,
@@ -247,7 +247,7 @@ class BaseTrainer(nn.Module):
         # 前向传播，获取预测结果
         y_pred = self.forward(x)
         # 计算损失
-        loss = self._calculate_loss(y_pred,y)
+        loss = self._calculate_loss(y_pred, y)
         # 反向传播，计算梯度
         loss.backward()
 

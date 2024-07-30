@@ -1,7 +1,7 @@
 from itertools import combinations
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 
 class BilinearInteraction(nn.Module):
@@ -41,7 +41,7 @@ class BilinearInteraction(nn.Module):
         else:
             raise NotImplementedError()
 
-    def forward(self, feats: torch.Tensor) -> torch.Tensor:
+    def forward(self, feats: Tensor) -> Tensor:
         """
         前向传播方法，根据双线性类型计算特征之间的交互。
 
@@ -101,7 +101,7 @@ class SqueezeExcition(nn.Module):
             nn.Sigmoid(),
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         Parameters:
         - x: The input tensor. Shape: (batch_size, num_fields, emb_dim).
@@ -147,7 +147,7 @@ class LinearWithAct(nn.Module):
         else:
             self.dropout = nn.Identity()
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         x = self.linear(x)
         x = self.act(x)
         x = self.bn(x)
@@ -190,14 +190,14 @@ class FiBiNet(nn.Module):
             fcs.append(fc)
         self.fcs = nn.Sequential(*fcs)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """_summary_
 
         Arguments:
             x -- shape (batch_size, num_fields, emb_dim)
 
         Returns:
-            torch.Tensor -- shape (batch_size, num_classes)
+            Tensor -- shape (batch_size, num_classes)
         """        
         f1 = self.bilinear_layer_1(x)  # (batch_size, fields*(fields-1)/2, emb_dim)
         f2 = self.selayer(x)  # (batch_size, fields, emb_dim)

@@ -1,10 +1,25 @@
+from typing import Literal
+
 import torch
 import torch.nn as nn
-
-from typing import Literal
+from torch import Tensor
 
 
 class BridgeLayer(nn.Module):
+    """BridgeLayer
+
+    Parameters:
+    - dim_in: 输入特征维度。
+    - mode: 桥接层的模式，可选值为"add", "product", "concat", "attention"，默认为"product"。
+
+    Input:
+    - x_deep: 输入特征，形状为[batch_size, dim_in]。
+    - x_cross: 输入特征，形状为[batch_size, dim_in]。
+
+    Output:
+    - y: 输出特征，形状为[batch_size, dim_in]。
+    """
+
     def __init__(
         self,
         dim_in: int,
@@ -29,7 +44,7 @@ class BridgeLayer(nn.Module):
                 nn.ReLU(inplace=True),
             )
 
-    def forward(self, x_deep: torch.Tensor, x_cross: torch.Tensor) -> torch.Tensor:
+    def forward(self, x_deep: Tensor, x_cross: Tensor) -> Tensor:
         if self.mode == "add":
             return x_deep + x_cross
         elif self.mode == "product":
@@ -43,13 +58,25 @@ class BridgeLayer(nn.Module):
 
 
 class RegularizationLayer(nn.Module):
+    """RegularizationLayer
+
+    Parameters:
+    - field_num: 字段数量。
+    - tau: 温度参数，默认为0.1。
+
+    Input:
+    - x: 输入特征，形状为[batch_size, field_num, dim_hidden]。
+    Output:
+    - y: 输出特征，形状为[batch_size, dim_hidden * field_num]。
+    """
+
     def __init__(self, field_num: int, tau: float) -> None:
         super().__init__()
         self.field_num = field_num
         self.tau = tau
         self.w = nn.Parameter(torch.randn(field_num, 1))
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         if len(x.size()) == 2:
             x = x.view(x.size(0), self.field_num, -1)
         g = torch.softmax(self.w.unsqueeze(0) / self.tau, dim=1)  # [1, field_num, 1]
@@ -77,6 +104,24 @@ class LinearReLU(nn.Module):
 
 
 class EDCN(nn.Module):
+    """Enhanced Deep & Cross Network
+
+    Parameters:
+    - field_num: 字段数量。
+    - emb_dim: 嵌入维度。
+    - total_emb_dim: 总嵌入维度。
+    - layer_num: 层数。
+    - num_classes: 类别数量，默认为1。
+    - bias: 是否使用偏置，默认为True。
+    - bridge_mode: 桥接层的模式，可选值为"add", "product", "concat", "attention"，默认为"product"。
+
+    Input:
+    - x: 输入的深度特征，形状为[batch_size, field_num, emb_dim]。
+
+    Output:
+    - y: 预测结果，形状为[batch_size, num_classes]。
+    """
+
     def __init__(
         self,
         field_num: int,
@@ -114,7 +159,7 @@ class EDCN(nn.Module):
 
         self.predict_head = nn.Linear(3 * total_emb_dim, num_classes, bias)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         x_deep = self.reg_layer_deep[0](x)
         x_cross = self.reg_layer_cross[0](x)
         x_cross_i = x_cross

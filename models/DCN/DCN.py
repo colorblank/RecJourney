@@ -1,6 +1,8 @@
 from typing import List, Literal
+
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class LinearReLU(nn.Module):
@@ -31,6 +33,12 @@ class CrossNetwork(nn.Module):
     - dim_in: 输入维度。
     - hidden_layer_num: 隐藏层的数量。
     - bias: 是否在线性层中使用偏置，默认为True。
+
+    Input:
+    - x: 输入张量，形状为(batch_size, dim_in)。
+
+    Returns:
+    - Tensor: 输出张量，形状为(batch_size, dim_in)。
     """
 
     def __init__(self, dim_in: int, hidden_layer_num: int, bias: bool = True):
@@ -43,14 +51,14 @@ class CrossNetwork(nn.Module):
             }
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """_summary_
 
         Args:
-            x (torch.Tensor): size = (batch_size, dim_in)
+            x (Tensor): size = (batch_size, dim_in)
 
         Returns:
-            torch.Tensor: _description_
+            Tensor: _description_
         """
         x_i = x
         # 遍历所有线性ReLU层，进行前向传播
@@ -62,6 +70,22 @@ class CrossNetwork(nn.Module):
 
 
 class DCNV2(nn.Module):
+    """
+    DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems
+    参数:
+    - dim_in: 输入维度。
+    - cross_layer_num: 交叉网络的层数。
+    - deep_hidden_dims: 深度网络的隐藏层维度列表。
+    - mode: 交叉网络模式，可选"stack"或"parallel"。
+    - num_classes: 输出的类别数，默认为1。
+    - bias: 是否使用偏置，默认为True。
+
+    Input:
+    - x: 输入张量，形状为(batch_size, dim_in)。
+
+    Returns:
+        Tensor: 输出张量，形状为(batch_size, num_classes)。
+    """
     def __init__(
         self,
         dim_in: int,
@@ -84,17 +108,17 @@ class DCNV2(nn.Module):
         )
         self.predict_head = nn.Linear(out_dim, num_classes, bias)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """_summary_
 
         Arguments:
-            x -- torch.Tensor. size = (batch_size, dim_in)
+            x -- Tensor. size = (batch_size, dim_in)
 
         Raises:
             ValueError: _description_
 
         Returns:
-            torch.Tensor: size = (batch_size, num_classes)
+            Tensor: size = (batch_size, num_classes)
         """
         f_cross = self.cross_net(x)
         if self.mode == "stack":
@@ -113,7 +137,8 @@ if __name__ == "__main__":
     # 初始化输入张量
     x = torch.randn(2, 10)
     # 创建一个交叉网络实例
-    # model = CrossNetwork(dim_in=10, hidden_layer_num=2)
+    model = CrossNetwork(dim_in=10, hidden_layer_num=2)
+    print(model(x).size())
     model = DCNV2(dim_in=10, cross_layer_num=2, deep_hidden_dims=[20, 10])
     # 打印模型输出的尺寸
     print(model(x).size())

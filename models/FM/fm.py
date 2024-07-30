@@ -2,18 +2,19 @@ from typing import List
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
-def second_order_interaction(x: torch.Tensor) -> torch.Tensor:
+def second_order_interaction(x: Tensor) -> Tensor:
     """
     计算输入特征的二阶交叉效应。
 
     Args:
-        x (torch.Tensor): 输入的特征嵌入，
+        x (Tensor): 输入的特征嵌入，
         形状为(batch_size, num_fields, embedding_dim)。
 
     Returns:
-        torch.Tensor: 二阶交叉项的和，形状为(batch_size, 1)
+        Tensor: 二阶交叉项的和，形状为(batch_size, 1)
     """
     square_of_sum = torch.pow(x.sum(dim=1), 2)
     sum_of_square = x.pow(2).sum(dim=1)
@@ -67,14 +68,14 @@ class FactorizationMachine(nn.Module):
                 [nn.Embedding(num_field, emb_dim) for num_field in num_fields]
             )
 
-    def forward(self, x: torch.LongTensor) -> torch.Tensor:
+    def forward(self, x: torch.LongTensor) -> Tensor:
         """_summary_
 
         Args:
             x (torch.LongTensor): size = (batch_size, num_fields)
 
         Returns:
-            torch.Tensor: size = (batch_size, 1)
+            Tensor: size = (batch_size, 1)
         """
         if self.use_bias:
             bias = self.bias.expand(x.size(0), 1)

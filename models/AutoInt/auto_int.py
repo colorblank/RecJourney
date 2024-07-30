@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from einops import rearrange
+from torch import Tensor
 
 
 class AutoInt(nn.Module):
@@ -15,6 +16,12 @@ class AutoInt(nn.Module):
     - nhead: 多头注意力的头数。
     - out_dim: 输出维度，默认为1。
     - bias: 是否使用偏置，默认为True。
+
+    Input:
+    - x: 输入张量。(batch, nfeat, dim_in)
+
+    Returns:
+    - 模型的输出张量。(batch, nfeat, dim_in)
     """
 
     def __init__(
@@ -41,7 +48,7 @@ class AutoInt(nn.Module):
         # 设置多头注意力的头数
         self.nhead = nhead
 
-    def _self_attention(self, x: torch.Tensor) -> torch.Tensor:
+    def _self_attention(self, x: Tensor) -> Tensor:
         """
         实现自注意力机制。
 
@@ -87,7 +94,7 @@ class AutoInt(nn.Module):
         )
         return z
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         前向传播函数。
 
