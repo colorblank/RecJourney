@@ -1,4 +1,5 @@
-from typing import List
+from collections import defaultdict
+from typing import Any, List
 
 
 def calculate_auc(y_true: List[int], y_pred: List[float]) -> float:
@@ -27,6 +28,35 @@ def calculate_auc(y_true: List[int], y_pred: List[float]) -> float:
 
     auc = (sum(rank_true) - M * (M + 1) / 2) / (M * N)
     return auc
+
+
+def calculdate_gauc(
+    y_true: List[int], y_pred: List[float], user_ids: List[Any]
+) -> float:
+    """
+    Calculate Group AUC (Area Under Curve) for binary classification.
+    Args:
+        y_true (List[int]): List of true labels.
+        y_pred (List[float]): List of predicted probabilities.
+        user_ids (List[any]): List of user IDs.
+    
+    Returns:
+        float: Group AUC value.
+    """
+
+    groups = defaultdict(lambda: {"scores": [], "truths": []})
+    for user_id, score, truth in zip(user_ids, y_pred, y_true):
+        groups[user_id]["scores"].append(score)
+        groups[user_id]["truths"].append(truth)
+
+    return (
+        sum(
+            calculate_auc(truths, scores) * len(truths)
+            for _, (scores, truths) in groups.items()
+        )
+        / len(groups)
+        / len(y_true)
+    )
 
 
 if __name__ == "__main__":
