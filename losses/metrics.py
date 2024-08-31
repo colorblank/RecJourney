@@ -39,7 +39,7 @@ def calculdate_gauc(
         y_true (List[int]): List of true labels.
         y_pred (List[float]): List of predicted probabilities.
         user_ids (List[any]): List of user IDs.
-    
+
     Returns:
         float: Group AUC value.
     """
