@@ -373,14 +373,24 @@ class CustomizedGateControl(nn.Module):
 
 
 class HiNet(nn.Module):
-    """_summary_
+    """
     paper: HiNet: Novel Multi-Scenario & Multi-Task Learning \
           with Hierarchical Information Extraction
     url: http://arxiv.org/abs/2303.06095
     
-    Arguments:
-        nn -- _description_
-    """    
+    Parameters:
+    - args: ModelArgs, 模型参数
+
+    Input:
+    - x: Tensor. size = (batch_size, dim_in)
+    - scene_emb: Tensor. size = (batch_size, dim_scene)
+    - scene_indicator: Tensor. (batch_size, scene_num)
+
+    Output:
+    - feats: List[Tensor]. size = [batch_size, dim_out] x expert_num
+
+    """
+
     def __init__(self, args: ModelArgs) -> None:
         super().__init__()
         # 初始化特定专家网络(SEI)

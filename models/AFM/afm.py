@@ -7,20 +7,20 @@ from torch import Tensor
 
 class AttentionalFactorizationMachine(nn.Module):
     """
-    Attentional Factorization Machine
+    注意力因子分解机
 
-    Parameters:
-    - num_fields: int. number of feature fields
-    - emb_dim: int. embedding dimension
-    - attn_dim: int. attention dimension
-    - num_classes: int. number of classes. default: 1
-    - bias: bool. whether to use bias. default: True
+    参数:
+    - num_fields: int. 特征字段数量
+    - emb_dim: int. 嵌入维度
+    - attn_dim: int. 注意力维度
+    - num_classes: int. 类别数量. 默认: 1
+    - bias: bool. 是否使用偏置. 默认: True
 
-    Input:
-    - x: Tensor. shape: (batch_size, num_fields, emb_dim)
+    输入:
+    - x: Tensor. 形状: (batch_size, num_fields, emb_dim)
 
-    Returns:
-    - y: Tensor. shape: (batch_size, num_classes)
+    返回:
+    - y: Tensor. 形状: (batch_size, num_classes)
     """
 
     def __init__(

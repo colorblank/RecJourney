@@ -60,13 +60,13 @@ class CrossNetwork(nn.Module):
         Returns:
             Tensor: _description_
         """
-        x_i = x
+        x0 = x
         # 遍历所有线性ReLU层，进行前向传播
         for i in range(len(self.linears)):
             # 计算当前层的输出，同时引入前一层的输出进行交叉
-            x_i = x * self.linears[f"fc_{i}"](x_i) + x_i
+            x = x0 * self.linears[f"fc_{i}"](x) + x
         # 返回最终的输出
-        return x_i
+        return x
 
 
 class DCNV2(nn.Module):
@@ -86,6 +86,7 @@ class DCNV2(nn.Module):
     Returns:
         Tensor: 输出张量，形状为(batch_size, num_classes)。
     """
+
     def __init__(
         self,
         dim_in: int,
