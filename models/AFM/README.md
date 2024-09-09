@@ -14,23 +14,35 @@ https://arxiv.org/pdf/1708.04617
 
 1. **模型架构**：AFM的神经网络架构包括输入层、嵌入层、成对交互层和基于注意力的池化层。输入层和嵌入层与FM相同，将非零特征嵌入到密集向量中。成对交互层通过元素级乘积扩展特征向量，形成交互向量。基于注意力的池化层通过对交互向量进行加权求和，计算每个特征交互的重要性得分。
 
-![1720529217029](https://file+.vscode-resource.vscode-cdn.net/Users/brian/Documents/git/RecJourney/models/AFM/image/README/1720529217029.png)
+![alt text](image/README/1720529217029.png)
 
-1. **成对交互层**：成对交互层的输出表示为：
+2. **成对交互层**：成对交互层的输出表示为：
 
    $$
    f_{P I}(\mathcal{E})=\left\{\left(v_i\odot v_j\right) x_i x_j\right\}_{(i, j)\in\mathcal{R}_x}
    $$
+   其中，$\odot$ 表示两个向量的元素级乘积，$\mathcal{R}_x=\{ (i,j) \}_{i\in \mathcal{X}, j\in \mathcal{X}, j>i}$表示所有可能的特征对。
+3. **基于注意力的池化层**：注意力机制通过对交互向量进行加权求和，计算每个特征交互的重要性得分：
+   $$
+   f_{\text{Att}}(f_{PI}(\mathcal{E}))=\sum_{(i,j)\in \mathcal{R}_x}a_ij(v_i\odot v_j)x_i x_j
+   $$
 
-   **其中，** 表示两个向量的元素级乘积，Rx={(i,j)}i∈X,j∈X,j>iR*x*={(*i*,*j*)}*i*∈X,*j*∈X,*j*>*i* 表示所有可能的特征对。
-2. **基于注意力的池化层**：注意力机制通过对交互向量进行加权求和，计算每个特征交互的重要性得分：
-   **fAtt(fPI(E))=∑(i,j)∈Rxaij(vi⊙vj)xixj***f*Att(*f**P**I*(E))=(*i*,*j*)∈R*x*∑*a**ij*(*v**i*⊙*v**j*)*x**i**x**j*
-   **其中，aij***a**ij* 是特征交互 w^ij*w*^*ij* 的注意力得分，通过多层感知器（MLP）估计：
-   **aij′=hTReLU⁡(W(vi⊙vj)xixj+b),aij=exp⁡(aij′)∑(i,j)∈Rxexp⁡(aij′),***a**ij*′=*h**T*ReLU(*W*(*v**i*⊙*v**j*)*x**i**x**j*+*b*),*a**ij*=∑(*i*,*j*)∈R*x*exp(*a**ij*′)exp(*a**ij*′),
-   **其中，W∈Rt×k,b∈Rt,h∈Rt***W*∈*R**t*×*k*,*b*∈*R**t*,*h*∈*R**t* 是模型参数，t*t* 表示注意力网络的隐藏层大小。
-3. **目标函数与优化**：AFM的目标函数为平方损失：
-   **Lr=∑x∈T(y^AFM(x)−y(x))2***L**r*=*x*∈T∑(*y*^*A**FM*(*x*)−*y*(*x*))2
-   **其中，TT 表示训练实例集合。使用随机梯度下降（SGD）优化目标函数，并应用L2***L*2正则化和dropout防止过拟合。
+   其中，$a_{ij}$ 是特征交互 $\hat{w}_{i,j}$ 的注意力得分，通过多层感知器（MLP）估计：
+   $$
+   a'_{ij}=h^T \text{ReLU}(W(v_i\odot v_j)x_i x_j+b)
+   $$
+
+   $$
+   a_{ij}=\frac{\exp(a'_{ij})}{\sum_{(i,j)\in \mathcal{R}_x}\exp(a'_{ij})}
+   $$
+
+   其中，$W\in \mathbb{R}^{t\times k}$, $b\in\mathbb{R}^{t}$, $h\in \mathbb{R}^t$是模型参数，$t$ 表示注意力网络的隐藏层大小。
+4. **目标函数与优化**：AFM的目标函数为平方损失：
+    $$
+    L_r = \sum_{x\in \tau} (\hat{y}_{AFM}(x)-y(x))^2
+    $$
+    
+    其中，$\tau$ 表示训练实例集合。使用随机梯度下降（SGD）优化目标函数，并应用$L_2$正则化和dropout防止过拟合。
 
 ## 实验设计
 
@@ -42,16 +54,19 @@ https://arxiv.org/pdf/1708.04617
 
 1. **超参数影响**：
    * **Dropout**：适当的dropout比率可以显著提高AFM和FM的性能。对于Frappe和MovieLens数据集，最佳dropout比率分别为0.2和0.5。
-     ![alt text](image.png)
+    
+        ![alt text](image/README/image.png)
+
    * **正则化**：对注意力网络施加L2*L*2正则化可以进一步提高AFM的性能。当λ*λ*大于0时，AFM的性能得到改善。
-     ![alt text](image-1.png)
-2. **注意力网络的影响**：
+    ![alt text](image/README/image-1.png)
+     
+1. **注意力网络的影响**：
    * **注意力因子**：AFM在不同注意力因子下的性能相对稳定。即使注意力因子为1，AFM仍显著优于FM。
-     ![alt text](image-2.png)
+     ![alt text](image/README/image-2.png)
    * **收敛速度**：AFM比FM收敛更快，且在测试集上的误差更低，表明AFM具有更好的泛化能力。
-     ![alt text](image-3.png)
-3. **微观层面分析**：通过分析MovieLens数据集中的特征交互得分，发现AFM能够有效区分不同特征交互的重要性，从而提高预测准确性。
-4. **性能比较**：AFM在所有方法中表现最佳，相对于LibFM有8.6%的相对提升，且使用的模型参数更少。AFM在性能上优于Wide&Deep和DeepCross，同时保持了更简单的结构和较少的参数。
+     ![alt text](image/README/image-3.png)
+2. **微观层面分析**：通过分析MovieLens数据集中的特征交互得分，发现AFM能够有效区分不同特征交互的重要性，从而提高预测准确性。
+3. **性能比较**：AFM在所有方法中表现最佳，相对于LibFM有8.6%的相对提升，且使用的模型参数更少。AFM在性能上优于Wide&Deep和DeepCross，同时保持了更简单的结构和较少的参数。
 
 ## 总体结论
 
@@ -77,18 +92,26 @@ https://arxiv.org/pdf/1708.04617
 
 **AFM模型中的Pair-wise Interaction Layer通过将每个特征向量扩展为与其他特征向量的元素乘积来替代FM中的内积操作。具体来说，Pair-wise Interaction Layer的输出表示为：**
 
-**fPI(E)={(vi⊙vj)xixj}(i,j)∈Rx***f**P**I*(E)={(*v**i*⊙*v**j*)*x**i**x**j*}(*i*,*j*)∈R*x*
+$$
+   f_{P I}(\mathcal{E})=\left\{\left(v_i\odot v_j\right) x_i x_j\right\}_{(i, j)\in\mathcal{R}_x}
+$$
 
-**其中，⊙⊙ 表示两个向量的元素乘积，Rx={(i,j)}i∈X,j∈X,j>iR***x*={(*i*,*j*)}*i*∈X,*j*∈X,*j*>*i* 表示所有可能的特征对。这种方法能够更有效地编码特征之间的交互信息，而不仅仅是通过内积操作。
+其中，$\odot$ 表示两个向量的元素级乘积，$\mathcal{R}_x=\{ (i,j) \}_{i\in \mathcal{X}, j\in \mathcal{X}, j>i}$表示所有可能的特征对。这种方法能够更有效地编码特征之间的交互信息，而不仅仅是通过内积操作。
 
 **问题2：AFM模型中的注意力机制是如何工作的？它是如何提高模型性能的？**
 
 **AFM模型中的注意力机制通过对特征交互进行加权求和来工作。具体来说，注意力分数通过一个多层感知器（MLP）估计，公式如下：**
 
-**aij′=hTReLU⁡(W(vi⊙vj)xixj+b)***a**ij*′=*h**T*ReLU(*W*(*v**i*⊙*v**j*)*x**i**x**j*+*b*)aij=exp⁡(aij′)∑(i,j)∈Rxexp⁡(aij′)*a**ij*=∑(*i*,*j*)∈R*x*exp(*a**ij*′)exp(*a**ij*′)
+   $$
+   a'_{ij}=h^T \text{ReLU}(W(v_i\odot v_j)x_i x_j+b)
+   $$
 
-**其中，W***W* 是权重矩阵，b*b* 是偏置项，h*h* 是隐藏层的输入，aij*a**ij* 是特征交互的注意力分数。通过这种方式，AFM能够自动学习不同特征交互的重要性，并对它们进行加权求和，从而提高模型的预测性能。实验结果表明，注意力机制不仅提高了模型的性能，还增强了模型的可解释性。
+   $$
+   a_{ij}=\frac{\exp(a'_{ij})}{\sum_{(i,j)\in \mathcal{R}_x}\exp(a'_{ij})}
+   $$
+
+其中，$W$ 是权重矩阵，$b$ 是偏置项，$h$ 是隐藏层的输入，$a_{ij}$ 是特征交互的注意力分数。通过这种方式，AFM能够自动学习不同特征交互的重要性，并对它们进行加权求和，从而提高模型的预测性能。实验结果表明，注意力机制不仅提高了模型的性能，还增强了模型的可解释性。
 
 **问题3：AFM模型在实验中的表现如何？与其他基线方法相比有何优势？**
 
-**AFM模型在实验中表现出色，特别是在模型参数较少的情况下，AFM比FM有8.6%的相对改进，比Wide&Deep有4.3%的相对改进。具体来说，AFM在Frappe和MovieLens数据集上的验证误差分别达到了0.3102和0.4325，显著优于其他基线方法，如LibFM、HOFM、Wide&Deep和DeepCross。此外，AFM还表现出更好的泛化能力，测试误差普遍低于训练误差，表明其能够更好地适应未见数据。总体而言，AFM不仅在性能上优于现有方法，还在模型参数较少的情况下实现了更高的性能，展示了其在稀疏数据预测任务中的潜力。**
+**AFM模型在实验中表现出色，特别是在模型参数较少的情况下，AFM比FM有8.6\%的相对改进，比Wide&Deep有4.3\%的相对改进。具体来说，AFM在Frappe和MovieLens数据集上的验证误差分别达到了0.3102和0.4325，显著优于其他基线方法，如LibFM、HOFM、Wide&Deep和DeepCross。此外，AFM还表现出更好的泛化能力，测试误差普遍低于训练误差，表明其能够更好地适应未见数据。总体而言，AFM不仅在性能上优于现有方法，还在模型参数较少的情况下实现了更高的性能，展示了其在稀疏数据预测任务中的潜力。**
