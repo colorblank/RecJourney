@@ -1,12 +1,44 @@
-# RecJourney
+# RecJourney: 推荐系统算法实现与实验
 
-## 1.环境依赖
+## 项目简介
+RecJourney 是一个专注于推荐系统算法实现与实验的开源项目。本项目旨在提供一个全面的推荐系统学习和研究平台,包含多个主流推荐算法的PyTorch实现,以及在公开数据集上的实验结果。
 
+### 主要特性
+
+- 📚 包含20+种主流推荐算法的PyTorch实现
+- 🔬 在多个公开数据集上进行了实验对比
+- 🛠 提供了完整的数据预处理、模型训练、评估流程
+- 📊 详细的实验结果分析与可视化
+- 🔧 模块化设计,易于扩展新的算法
+
+
+## 快速开始
+
+### 环境要求
+
+- Python 3.7+
+- PyTorch 1.7+
+- CUDA 10.1+ (对于GPU加速)
+
+### 安装
+
+1. 克隆仓库:
+```
+git clone https://github.com/yourusername/RecJourney.git
+```
+
+2. 安装依赖:
 ```
 pip install -r requirements.txt
 ```
 
-## 2.论文
+### 使用
+
+TODO
+
+
+## 支持的算法
+
 
 ### 阿里巴巴
 
@@ -60,26 +92,27 @@ pip install -r requirements.txt
 
 | 模型名称 | 标签 | 进度 |
 | -------- | ---- | ---- |
-| AFM      |      |      |
-| AutoInt  |      |      |
-| BST      |      |      |
-| CAN      |      |      |
-| DCN      |      |      |
-| DIEN     |      |      |
-| DIN      |      |      |
+| AFM      |      | 完成 |
+| AutoInt  |      | 完成 |
+| BST      |      | 完成 |
+| CAN      |      | 完成 |
+| DCN      |      | 完成 |
+| DIEN     |      | 完成 |
+| DIN      |      | 完成 |
 | DSIN     |      |      |
-| EDCN     |      |      |
-| ESMM     |      |      |
+| EDCN     |      | 完成 |
+| ESMM     |      | 完成 |
 | FiBiNet  |      |      |
 | FM       |      |      |
-| GDCN     |      |      |
+| GDCN     |      | 完成 |
 | HC2      |      |      |
-| HiNet    |      |      |
+| HiNet    |      | 完成 |
 | MMOE     |      |      |
 | PEPNet   |      |      |
-| PLE      |      |      |
-| POSO     |      |      |
-| xDeepFM  |      |      |
+| PLE      |      | 完成 |
+| POSO     |      | 完成 |
+| WideDeep |      | 完成 |
+| xDeepFM  |      | 完成 |
 
 ## 4.模型评估
 
@@ -90,3 +123,10 @@ pip install -r requirements.txt
 | AutoInt      | 0.56431 | 0.09450 |
 | SharedBottom | 0.55899 | 0.09820 |
 |              |         |         |
+
+## 贡献指南
+
+TODO
+
+## 引用
+TODO
