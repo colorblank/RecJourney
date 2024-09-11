@@ -1,6 +1,9 @@
+from dataclasses import dataclass
+from typing import List, Optional
+
 import torch
 import torch.nn as nn
-from typing import List
+from torch import Tensor
 
 
 class LinearReLUDropOut(nn.Module):
@@ -36,15 +39,15 @@ class LinearReLUDropOut(nn.Module):
         else:
             self.dropout = nn.Dropout(p)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         前向传播过程。
 
         参数:
-            x (torch.Tensor): 输入的张量。
+            x (Tensor): 输入的张量。
 
         返回:
-            torch.Tensor: 经过线性层、ReLU激活函数和dropout后的输出张量。
+            Tensor: 经过线性层、ReLU激活函数和dropout后的输出张量。
         """
         # 应用线性层，然后是ReLU激活函数，最后是dropout
         return self.dropout(self.act(self.linear(x)))
@@ -84,41 +87,45 @@ class Expert(nn.Module):
             ]
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         前向传播函数。
 
         参数:
-        - x: torch.Tensor, 输入的张量
+        - x: Tensor, 输入的张量
 
         返回:
-        - torch.Tensor, 经过模型处理后的输出张量
+        - Tensor, 经过模型处理后的输出张量
         """
         return self.expert(x)
 
 
-class PredictHead(nn.Moudle):
+@dataclass
+class HeadArgs:
+    dims: List[int]
+    activation: Optional[str] = "relu"
+    bias: Optional[bool] = True
+
+
+class PredictHead(nn.Module):
     def __init__(self, dims: List[int], activation: str = "relu", bias: bool = True):
         super().__init__()
         self.layer_num = len(dims) - 1
         layers = list()
-        for i in range(1, self.layer_num):
+        for i in range(self.layer_num):
             if i == (self.layer_num - 1):
-                layer = LinearReLUDropOut(
-                    dim_in=dims[i - 1], dim_out=dims[i], bias=bias, p=0, activation=None
-                )
-            else:
-                layer = LinearReLUDropOut(
-                    dim_in=dims[i - 1],
-                    dim_out=dims[i],
-                    bias=bias,
-                    p=0,
-                    activation=activation,
-                )
+                activation = None
+            layer = LinearReLUDropOut(
+                dim_in=dims[i],
+                dim_out=dims[i + 1],
+                bias=bias,
+                p=0,
+                activation=activation,
+            )
             layers.append(layer)
         self.layers = nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         return self.layers(x)
 
 
@@ -175,6 +182,7 @@ class SharedBottomModel(nn.Module):
     ) -> None:
         super().__init__()
         self.bottom = Expert(dim_in, dim_out, dim_hidden, dropout)
+        assert dims[0] == dim_out
         self.towers = nn.ModuleDict(
             {
                 f"tower_{i}": PredictHead(dims, activation=activation, bias=bias)
@@ -183,13 +191,25 @@ class SharedBottomModel(nn.Module):
         )
         self.task_num = task_num
 
-    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+    def forward(self, x: Tensor) -> List[Tensor]:
         x = self.bottom(x)
         res = []
         for i in range(self.task_num):
             y = self.towers[f"tower_{i}"](x)
+            y = torch.sigmoid(y)
             res.append(y)
         return res
+
+
+@dataclass
+class MMOEArgs:
+    dim_in: int
+    dim_out: int
+    dim_hidden: List[int]
+    expert_num: int
+    task_num: int
+    dropout: Optional[float] = 0.1
+    bias: Optional[bool] = True
 
 
 class Multi_Gate_MOE(nn.Module):
@@ -239,15 +259,15 @@ class Multi_Gate_MOE(nn.Module):
             {f"gate_{i}": Gate(dim_in, expert_num, bias) for i in range(task_num)}
         )
 
-    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+    def forward(self, x: Tensor) -> List[Tensor]:
         """
         前向传播函数。
 
         参数:
-        - x: torch.Tensor, 输入张量
+        - x: Tensor, 输入张量
 
         返回:
-        - out: List[torch.Tensor], 包含每个任务的加权专家输出的列表
+        - out: List[Tensor], 包含每个任务的加权专家输出的列表
         """
         feats = list()  # 存储每个专家的输出
         for i in range(self.expert_num):
@@ -267,6 +287,28 @@ class Multi_Gate_MOE(nn.Module):
         return out
 
 
+class MMOE(nn.Module):
+    def __init__(self, mmoe_args: MMOEArgs, head_args: HeadArgs) -> None:
+        super().__init__()
+        self.mmoe = Multi_Gate_MOE(**mmoe_args.__dict__)
+        self.task_num = mmoe_args.task_num
+        self.heads = nn.ModuleDict(
+            {
+                f"head_{i}": PredictHead(**head_args.__dict__)
+                for i in range(self.task_num)
+            }
+        )
+
+    def forward(self, x: Tensor) -> List[Tensor]:
+        feats = self.mmoe(x)
+        outs = list()
+        for i in range(self.task_num):
+            out = self.heads[f"head_{i}"](feats[i])
+            out = torch.sigmoid(out)
+            outs.append(out)
+        return outs
+
+
 if __name__ == "__main__":
     batch_size = 2
     dim_in = 10
@@ -275,13 +317,21 @@ if __name__ == "__main__":
     expert_num = 4
     task_num = 2
     x = torch.randn(batch_size, dim_in)
-    model = Multi_Gate_MOE(
-        dim_in,
-        dim_out,
-        dim_hidden,
-        expert_num,
-        task_num,
+    # model = Multi_Gate_MOE(
+    #     dim_in,
+    #     dim_out,
+    #     dim_hidden,
+    #     expert_num,
+    #     task_num,
+    # )
+    # ys = model(x)
+    # for y in ys:
+    #     print(y.size())  # [batch_size, dim_out]
+
+    model = SharedBottomModel(
+        dim_in, dim_out, dim_hidden, dims=[dim_out, dim_out, 1], task_num=1, dropout=0.1
     )
+    print(model)
     ys = model(x)
     for y in ys:
         print(y.size())  # [batch_size, dim_out]

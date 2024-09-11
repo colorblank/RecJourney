@@ -2,6 +2,7 @@ from typing import List
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class LinearReLUDropOut(nn.Module):
@@ -37,15 +38,15 @@ class LinearReLUDropOut(nn.Module):
         else:
             self.dropout = nn.Dropout(p)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         前向传播过程。
 
         参数:
-            x (torch.Tensor): 输入的张量。
+            x (Tensor): 输入的张量。
 
         返回:
-            torch.Tensor: 经过线性层、ReLU激活函数和dropout后的输出张量。
+            Tensor: 经过线性层、ReLU激活函数和dropout后的输出张量。
         """
         # 应用线性层，然后是ReLU激活函数，最后是dropout
         return self.dropout(self.act(self.linear(x)))
@@ -76,17 +77,17 @@ class GateNeuralUnit(nn.Module):
         self.gamma = gamma  # 门控系数
 
     def forward(
-        self, f_domain: torch.Tensor, f_general: torch.Tensor = None
-    ) -> torch.Tensor:
+        self, f_domain: Tensor, f_general: Tensor = None
+    ) -> Tensor:
         """
         执行前向传播操作，将特定领域的特征和通用特征结合起来，并通过门控机制产生最终输出。
 
         参数:
-            f_domain (torch.Tensor): 特定领域的特征向量。[batch_size, dim_in_1]
-            f_general (torch.Tensor): 通用特征向量。 [batch_size, dim_in_2]
+            f_domain (Tensor): 特定领域的特征向量。[batch_size, dim_in_1]
+            f_general (Tensor): 通用特征向量。 [batch_size, dim_in_2]
 
         返回:
-            torch.Tensor: 经过门控机制处理后的综合特征向量。 [batch_size, dim_in_2]
+            Tensor: 经过门控机制处理后的综合特征向量。 [batch_size, dim_in_2]
         """
         if f_general is None:
             x = f_domain
@@ -108,7 +109,7 @@ class EPNet(nn.Module):
         super().__init__()
         self.gate_nu = GateNeuralUnit(gate_dim_in, gate_dim_hidden, gate_dim_out, gamma)
 
-    def forward(self, f_d: torch.Tensor, f_g: torch.Tensor) -> torch.Tensor:
+    def forward(self, f_d: Tensor, f_g: Tensor) -> Tensor:
         f = torch.cat([f_d, f_g.detach()], dim=-1)
         return self.gate_nu(f) * f_g
 
@@ -176,9 +177,9 @@ class PPNet(nn.Module):
 
     def forward(
         self,
-        f_s: torch.Tensor,
-        o_ep: torch.Tensor,
-    ) -> List[torch.Tensor]:
+        f_s: Tensor,
+        o_ep: Tensor,
+    ) -> List[Tensor]:
         """
         前向传播函数。
 
@@ -261,8 +262,8 @@ class PEPNet(nn.Module):
         )
 
     def forward(
-        self, f_domain: torch.Tensor, f_side: torch.Tensor, f_general: torch.Tensor
-    ) -> torch.Tensor:
+        self, f_domain: Tensor, f_side: Tensor, f_general: Tensor
+    ) -> Tensor:
         """
         前向传播函数，输入领域特征、侧边特征和通用特征，输出任务特征。
 
