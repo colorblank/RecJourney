@@ -6,54 +6,51 @@
 
 2. **研究难点**：该问题的研究难点包括：如何在不使用DNN的情况下提高显式特征交互的性能；如何在增加特征交互阶数的同时有效过滤噪声；如何为不同子网络提供适当的监督信号；如何提高模型的可解释性。
 
-3. 相关工作
-
-    ：该问题的研究相关工作有：传统的线性模型如LR和FM，以及深度学习模型如DNN、PNN、Wide & Deep、DeepFM、DCNv1、DCNv2、DIN、FiGNN等。这些模型在捕捉特征交互方面有不同的方法和优缺点。
-
-    ![img](https://pcg-pdf-1258344706.cos.ap-nanjing.myqcloud.com/bc2bb5ed72ceb3ebfc8311798c77a36110aca3f9.jpeg?q-sign-algorithm=sha1&q-ak=AKIDPegYHoiRZifN0VwunU1MaeaLwJVW75c4&q-sign-time=1726061344%3B1728653944&q-key-time=1726061344%3B1728653944&q-header-list=&q-url-param-list=&q-signature=5a97f75cc2099bd623f3ad50ca12f4124a2cbde5)
-
+3. **相关工作**：该问题的研究相关工作有：传统的线性模型如LR和FM，以及深度学习模型如DNN、PNN、Wide & Deep、DeepFM、DCNv1、DCNv2、DIN、FiGNN等。这些模型在捕捉特征交互方面有不同的方法和优缺点。
+    ![alt text](image/bc2bb5ed72ceb3ebfc8311798c77a36110aca3f9.jpeg)
 ## 研究方法
 
 这篇论文提出了下一代深度交叉网络（DCNv3），用于解决CTR预测中的特征交互建模问题。具体来说，
 
+![alt text](image/b733c7e0c6b979bbc07517b7b345902b0dbedf0c.jpeg)
+
 1. **线性交叉网络（LCN）**：用于低阶（浅层）显式特征交互，采用线性增长的交互方法。其递归公式如下：
+    $$
+    \mathbf{c}_l = \mathbf{W}_l \mathbf{x}_l + \mathbf{b}_l,
+    $$
 
-cl=Wl⋅xl−1+bl*c**l*=*W**l*⋅*x**l*−1+*b**l*xl=xl−1⊙[cl∣∣Mask(cl)∣]+xl−1*x**l*=*x**l*−1⊙[*c**l*∣∣Mask(*c**l*)∣]+*x**l*−1
+    $$
+    \mathbf{x}_{l+1} = \mathbf{x}_{l} \odot[\mathbf{c}_{l} || \text{Mask}(\mathbf{c}_{l})] +\mathbf{x}_{l},
+    $$
+    其中，$c_l\in\mathbb{R}^{D//2}$表示第$l$层的交叉向量，$\mathbf{W}_l\in\mathbb{R}^{\frac{D}{2}\times D}$ 和 $\mathbf{b}_{l}\in\mathbb{R}^{\frac{D}{2}}$分别是可学习的权重矩阵和偏置向量，$\mathbf{x}_{l+1}$是第 $l+1$ 层的特征交互，$\text{Mask}$表示自掩码操作。
 
-其中，cl*c**l*表示第l*l*层的交叉向量，Wl*W**l*和bl*b**l*分别是可学习的权重矩阵和偏置向量，xl−1*x**l*−1是第l−1*l*−1层的特征交互，MaskMask表示自掩码操作。
+2. **指数交叉网络（ECN）**：用于高阶（深层）显式特征交互，采用指数增长的交互方法。其递归公式如下：
 
-![img](https://pcg-pdf-1258344706.cos.ap-nanjing.myqcloud.com/b733c7e0c6b979bbc07517b7b345902b0dbedf0c.jpeg?q-sign-algorithm=sha1&q-ak=AKIDPegYHoiRZifN0VwunU1MaeaLwJVW75c4&q-sign-time=1726061344%3B1728653944&q-key-time=1726061344%3B1728653944&q-header-list=&q-url-param-list=&q-signature=932f7937cbf49f91529cabb4416190dcbd28685f)
+    $$
+    \mathbf{c}_l = \mathbf{W}_l \mathbf{x}_{2^{l-1}} + \mathbf{b}_l,
+    $$
 
+    $$
+    \mathbf{x}_{2^{l}} = \mathbf{x}_{2^{l-1}} \odot[\mathbf{c}_{l} || \text{Mask}(\mathbf{c}_{l})] +\mathbf{x}_{2^{l-1}},
+    $$
 
-
-1. **指数交叉网络（ECN）**：用于高阶（深层）显式特征交互，采用指数增长的交互方法。其递归公式如下：
-
-ce=We⋅xe−1−1+be*c**e*=*W**e*⋅*x**e*−1−1+*b**e*xe=xe−1⊙[ce∣∣Mask(ce)∣]+xe−1*x**e*=*x**e*−1⊙[*c**e*∣∣Mask(*c**e*)∣]+*x**e*−1
-
-其中，ce*c**e*表示第e*e*层的交叉向量，We*W**e*和be*b**e*分别是可学习的权重矩阵和偏置向量，xe−1*x**e*−1是第e−1*e*−1层的特征交互，MaskMask表示自掩码操作。
+    其中，$\mathbf{x}_{2^{l}}$表示第$2^{l}$阶的交叉向量。
 
 3. **自掩码操作（Self-Mask）**：用于过滤噪声并减少交叉网络中的参数数量。其计算过程如下：
+    $$
+    \text{Mask}(\mathbf{c}_l)=\mathbf{c}_l\odot\max(0, \text{LN}(\mathbf{c}_l)),
+    $$
 
-Mask(cl)=cl⊙max⁡(0,LN(cl))Mask(*c**l*)=*c**l*⊙max(0,LN(*c**l*))LN(cl)=g⋅Norm(cl)+bLN(*c**l*)=*g*⋅Norm(*c**l*)+*b*
-
-其中，LNLN表示层归一化，g*g*和b*b*是参数，cl*c**l*是交叉向量。
-
-![img](https://pcg-pdf-1258344706.cos.ap-nanjing.myqcloud.com/ea4dfc48210ba5573c714874369e791be230f3fb.jpeg?q-sign-algorithm=sha1&q-ak=AKIDPegYHoiRZifN0VwunU1MaeaLwJVW75c4&q-sign-time=1726061344%3B1728653944&q-key-time=1726061344%3B1728653944&q-header-list=&q-url-param-list=&q-signature=893bdfa14237f6f1b5a9a63efcb1224432bdf4a7)
-
+    $$
+    \text{LN}(\mathbf{c}_l)=\mathbf{g}\odot \frac{\mathbf{c}_l -\mu}{\delta}+\mathbf{b},
+    $$
+    其中，LNLN表示层归一化，$\mathbf{g}$和$\mathbf{b}$是参数。
 
 
-1. **融合层**：通过LCN和ECN的预测结果进行融合，避免使用DNN：
+4. **融合层**：通过LCN和ECN的预测结果进行融合：两个term的预测结果进行分别经过一个线性层，得到$\hat{y}_D$和$\hat{y}_S$，最终求均值得到预测结果$\hat{y}$。
 
-y^=12(We⋅xe+be)+12(Wl⋅xl+bl)*y*^=21(W*e*⋅*x**e*+*b**e*)+21(W*l*⋅*x**l*+*b**l*)
-
-其中，y^*y*^是最终预测结果，We*W**e*和Wl*W**l*是可学习的权重，be*b**e*和bl*b**l*是偏置。
-
-5. **Tri-BCE损失**：提出了一种简单而有效的多损失计算方法，称为Tri-BCE，以提供适当的监督信号：
-
-L=−∑i=1n(yilog⁡(y^i)+(1−yi)log⁡(1−y^i))*L*=−*i*=1∑*n*(*y**i*log(*y*^*i*)+(1−*y**i*)log(1−*y*^*i*))Ltri=L+wec⋅Lec+wlc⋅Llc*L*tri=*L*+*w**ec*⋅*L**ec*+*w**l**c*⋅*L**l**c*
-
-其中，yi*y**i*是真实标签，y^i*y*^*i*是预测结果，Lec*L**ec*和Llc*L**l**c*分别是ECN和LCN的损失，wec*w**ec*和wlc*w**l**c*是自适应权重。
-
+5. **Tri-BCE损失**：提出了一种简单而有效的多损失计算方法，称为Tri-BCE，以提供适当的监督信号：$\hat{y}_D$, $\hat{y}_S$, $\hat{y}$ 均与真实标签计算交叉熵损失，然后加权求和。
+![alt text](image/ea4dfc48210ba5573c714874369e791be230f3fb.jpeg)
 ## 实验设计
 
 1. **数据集**：在六个CTR预测数据集上进行实验，包括Avazu、Criteo、ML-1M、KDD12、iPinYou和KKBox。
