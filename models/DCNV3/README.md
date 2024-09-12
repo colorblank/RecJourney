@@ -63,25 +63,22 @@
 
 1. **整体性能（RQ1）**：DCNv3在所有六个数据集上均表现出色，平均AUC提升0.21%，平均Logloss降低0.11%，均超过统计显著阈值0.1%。ECN在AUC方面表现最佳，而DCNv3在Logloss优化方面表现更好。
 
-    ![img](https://pcg-pdf-1258344706.cos.ap-nanjing.myqcloud.com/e0eb9958f50e3bafafb1472027089294ceaf0a91.jpeg?q-sign-algorithm=sha1&q-ak=AKIDPegYHoiRZifN0VwunU1MaeaLwJVW75c4&q-sign-time=1726061344%3B1728653944&q-key-time=1726061344%3B1728653944&q-header-list=&q-url-param-list=&q-signature=e488bd7710f38513f38e6e36f8245a72665e60c8)
+![alt text](image/image.png)
 
     
 
 2. **效率比较（RQ2）**：显式CTR模型通常参数较少，运行时间较短。DCNv3和ECN是最参数高效的模型，分别在Avazu和Criteo数据集上达到SOTA性能，同时保持较高的运行效率。
-
-    ![img](https://pcg-pdf-1258344706.cos.ap-nanjing.myqcloud.com/94041483b2468f980ca55df896dbe2af88f83e5d.jpeg?q-sign-algorithm=sha1&q-ak=AKIDPegYHoiRZifN0VwunU1MaeaLwJVW75c4&q-sign-time=1726061344%3B1728653944&q-key-time=1726061344%3B1728653944&q-header-list=&q-url-param-list=&q-signature=3ab9fb1a427ce428499a9fd6997aac7017b98a34)
+![alt text](image/image-1.png)
 
     
 
 3. **可解释性和噪声过滤能力（RQ3）**：通过动态交叉向量和静态权重向量分析了模型的预测过程，发现自掩码操作有效地过滤了噪声，提高了模型的可解释性。
-
-    ![img](https://pcg-pdf-1258344706.cos.ap-nanjing.myqcloud.com/8aeb16b91764751ad3e144b5cd9d81f1f7b4daa7.jpeg?q-sign-algorithm=sha1&q-ak=AKIDPegYHoiRZifN0VwunU1MaeaLwJVW75c4&q-sign-time=1726061344%3B1728653944&q-key-time=1726061344%3B1728653944&q-header-list=&q-url-param-list=&q-signature=28f7799f4eec0073ed31dc4c2736bf8564a4ee31)
+![alt text](image/image-2.png)
 
     
 
 4. **消融研究（RQ4）**：去除Tri-BCE损失、去除层归一化后的模型性能有所下降，表明这些组件对模型性能的必要性。LCN和ECN在不同网络深度下的性能也进行了实验，发现ECN在高阶特征交互方面表现更优。
-
-    ![img](https://pcg-pdf-1258344706.cos.ap-nanjing.myqcloud.com/f5b10cd6ee668ca99f94a0ccd37d078c8b1f653c.jpeg?q-sign-algorithm=sha1&q-ak=AKIDPegYHoiRZifN0VwunU1MaeaLwJVW75c4&q-sign-time=1726061344%3B1728653944&q-key-time=1726061344%3B1728653944&q-header-list=&q-url-param-list=&q-signature=a300a4c93d5f916ff01eeacc59390692560fd375)
+![alt text](image/image-3.png)
 
     
 
@@ -110,13 +107,28 @@
 
 线性交叉网络（LCN）用于低阶（浅层）显式特征交互，采用线性增长的交互方法。其递归公式如下：
 
-cl=Wl⋅xl−1+bl*c**l*=*W**l*⋅*x**l*−1+*b**l*xl=xl−1⊙[cl∣∣Mask(cl)∣]+xl−1*x**l*=*x**l*−1⊙[*c**l*∣∣Mask(*c**l*)∣]+*x**l*−1
+$$
+\mathbf{c}_l = \mathbf{W}_l \mathbf{x}_l + \mathbf{b}_l,
+$$
+
+$$
+\mathbf{x}_{l+1} = \mathbf{x}_{l} \odot[\mathbf{c}_{l} || \text{Mask}(\mathbf{c}_{l})] +\mathbf{x}_{l},
+$$
 
 LCN适用于捕捉低阶特征交互，能够在有限层数内有效地进行特征交互，适合用于小规模或中等规模的数据集。
 
 指数交叉网络（ECN）用于高阶（深层）显式特征交互，采用指数增长的交互方法。其递归公式如下：
 
-ce=We⋅xe−1−1+be*c**e*=*W**e*⋅*x**e*−1−1+*b**e*xe=xe−1⊙[ce∣∣Mask(ce)∣]+xe−1*x**e*=*x**e*−1⊙[*c**e*∣∣Mask(*c**e*)∣]+*x**e*−1
+
+
+
+$$
+\mathbf{c}_l = \mathbf{W}_l \mathbf{x}_{2^{l-1}} + \mathbf{b}_l,
+$$
+
+$$
+\mathbf{x}_{2^{l}} = \mathbf{x}_{2^{l-1}} \odot[\mathbf{c}_{l} || \text{Mask}(\mathbf{c}_{l})] +\mathbf{x}_{2^{l-1}},
+$$
 
 ECN适用于捕捉高阶特征交互，能够在较少的层数内实现特征交互的指数增长，适合用于大规模数据集和需要高效特征交互的场景。
 
@@ -124,18 +136,24 @@ ECN适用于捕捉高阶特征交互，能够在较少的层数内实现特征�
 
 自掩码操作（Self-Mask）用于过滤噪声并减少交叉网络中的参数数量。其计算过程如下：
 
-Mask(cl)=cl⊙max⁡(0,LN(cl))Mask(*c**l*)=*c**l*⊙max(0,LN(*c**l*))LN(cl)=g⋅Norm(cl)+bLN(*c**l*)=*g*⋅Norm(*c**l*)+*b*
+$$
+\text{Mask}(\mathbf{c}_l)=\mathbf{c}_l\odot\max(0, \text{LN}(\mathbf{c}_l)),
+$$
 
-其中，LNLN表示层归一化，g*g*和b*b*是参数，cl*c**l*是交叉向量。
+$$
+\text{LN}(\mathbf{c}_l)=\mathbf{g}\odot \frac{\mathbf{c}_l -\mu}{\delta}+\mathbf{b},
+$$
+其中，$\text{LN}$表示层归一化，$\mathbf{g}$和$\mathbf{b}$是参数。
 
 在特征交互过程中，自掩码操作通过将交叉向量的每个元素与层归一化后的结果进行逐元素乘积，从而过滤掉噪声信息。具体来说，层归一化确保了掩码操作后交叉向量中包含大约50%的零值，这些零值对应于无用的噪声特征交互，从而减少了模型的参数数量和计算复杂度，同时提高了模型的泛化能力和预测精度。
 
 **问题3：DCNv3中的Tri-BCE损失函数是如何设计的？它如何为不同子网络提供适当的监督信号？**
 
 Tri-BCE损失函数用于提供适当的监督信号。其计算过程如下：
+$$
+\mathcal{L}_{\text{Tri}}=\mathcal{L}+\mathbf{w}_D \cdot \mathcal{L}_D+\mathbf{w}_s \cdot \mathcal{L}_s, 
+$$
 
-L=−∑i=1n(yilog⁡(y^i)+(1−yi)log⁡(1−y^i))*L*=−*i*=1∑*n*(*y**i*log(*y*^*i*)+(1−*y**i*)log(1−*y*^*i*))Ltri=L+wec⋅Lecn+wlc⋅Llcn*L**t**r**i*=*L*+*w**ec*⋅*L**ec**n*+*w**l**c*⋅*L**l**c**n*
+其中，$\mathbf{w}_D=\max(0,\mathcal{L}_D -\mathcal{D})$ 和 $\mathbf{w}_s=\max(0,\mathcal{L}_s -\mathcal{L})$ 是自适应权重。
 
-其中，yi*y**i*是真实标签，y^i*y*^*i*是预测结果，wec*w**ec*和wlc*w**l**c*是自适应权重。
-
-Tri-BCE损失函数通过为ECN和LCN分别设置自适应权重wec*w**ec*和wlc*w**l**c*，使得这两个子网络在训练过程中获得不同的监督信号。具体来说，Tri-BCE损失函数的主要损失L*L*是二元交叉熵损失，辅助损失Lecn*L**ec**n*和Llcn*L**l**c**n*分别针对ECN和LCN的预测结果。通过联合训练这两个子网络，Tri-BCE损失函数能够动态调整权重，确保每个子网络根据其在总体损失中的贡献获得合适的监督信号，从而提高模型的整体性能。
+Tri-BCE损失函数通过为ECN和LCN分别设置自适应权重$\mathbf{w}_D$和$\mathbf{w}_s$，使得这两个子网络在训练过程中获得不同的监督信号。具体来说，Tri-BCE损失函数的主要损失$\mathcal{L}$是二元交叉熵损失，辅助损失$\mathcal{L}_D$和$\mathcal{L}_s$分别针对ECN和LCN的预测结果。通过联合训练这两个子网络，Tri-BCE损失函数能够动态调整权重，确保每个子网络根据其在总体损失中的贡献获得合适的监督信号，从而提高模型的整体性能。
