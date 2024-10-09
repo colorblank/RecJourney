@@ -1,4 +1,4 @@
-# Attentional Factorization Machines: Learning the Weight of Feature Interactions via Attention Networks∗
+# Attentional Factorization Machines: Learning the Weight of Feature Interactions via Attention Networks
 
 https://arxiv.org/pdf/1708.04617
 
