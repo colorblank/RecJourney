@@ -27,3 +27,4 @@
 | 4    | PEPNet   | 快手 | KDD    | 2023 | PEPNet: Parameter and Embedding Personalized Network for Infusing with Personalized Prior Information          |
 | 0    | DCNV3    | 华为 | /      | 2024 | DCNv3: Towards Next Generation Deep Cross Network for CTR Prediction                                           |
 | 0    | NAR4Rec  | 快手 | KDD    | 2024 | Non-autoregressive Generative Models for Reranking Recommendation                                              |
+| 0    | FinalMLP  | 华为 | AAAI    | 2023 | FinalMLP: An Enhanced Two-Stream MLP Model for CTR Prediction                              |
