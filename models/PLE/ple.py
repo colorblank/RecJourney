@@ -94,8 +94,7 @@ class Gate(nn.Module):
     - bias: bool = True, 是否在门控线性变换中使用偏置，默认为True
     - dropout: float = 0.1, Dropout比例，默认为0.1，用于防止过拟合
 
-    返回:
-    - None
+    
     """
 
     def __init__(
@@ -140,8 +139,11 @@ class CustomizedGateControl(nn.Module):
     - dropout: float = 0.1, Dropout比例，默认为0.1
     - bias: bool = True, 是否包含偏置，默认为True
 
-    返回:
-    - None
+    输入:
+    - x: torch.Tensor, 输入张量
+
+    输出:
+    - List[torch.Tensor], 包含每个任务特征的列表
     """
 
     def __init__(

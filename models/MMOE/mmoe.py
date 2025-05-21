@@ -279,9 +279,9 @@ class Multi_Gate_MOE(nn.Module):
         out = list()  # 存储每个任务的输出
         for i in range(self.task_num):
             # 计算每个任务的门控权重
-            f = self.gates[f"gate_{i}"](x)  # [batch, expert_num]
+            w = self.gates[f"gate_{i}"](x)  # [batch, expert_num]
             # 应用门控权重
-            f = torch.einsum("bde,be->bd", feats, f)
+            f = torch.einsum("bde,be->bd", feats, w)
             out.append(f)
 
         return out
