@@ -33,7 +33,6 @@ class TestCoActionUnit:
 
         ad = torch.rand(ad_shape)
         his_items = torch.rand(his_items_shape)
-        mask = torch.rand(his_items_shape) > 0.5  # 创建一个随机的二值掩码
         out = cau.forward(ad, his_items, None)
 
         assert out.shape == (
