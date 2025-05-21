@@ -94,7 +94,7 @@ class Gate(nn.Module):
     - bias: bool = True, 是否在门控线性变换中使用偏置，默认为True
     - dropout: float = 0.1, Dropout比例，默认为0.1，用于防止过拟合
 
-    
+
     """
 
     def __init__(
