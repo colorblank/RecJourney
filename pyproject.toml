@@ -1,0 +1,16 @@
+[project]
+name = "recjourney"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "einops>=0.8.1",
+    "numpy>=2.2.6",
+    "pandas>=2.2.3",
+    "polars>=1.30.0",
+    "pyyaml>=6.0.2",
+    "ruff>=0.11.10",
+    "scikit-learn>=1.6.1",
+    "torch==2.5.0",
+]
