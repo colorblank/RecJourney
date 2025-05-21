@@ -86,7 +86,8 @@ if __name__ == "__main__":
     print(f"输出形状: {output.shape}")
 
     # 检查输出是否为概率分布
-    assert torch.allclose(output.sum(dim=1), torch.ones(batch_size)), "输出不是有效的概率分布"
+    assert torch.allclose(output.sum(dim=1), torch.ones(batch_size)), (
+        "输出不是有效的概率分布"
+    )
 
     print("测试通过!")
-

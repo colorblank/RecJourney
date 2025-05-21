@@ -69,9 +69,9 @@ class LHUC(nn.Module):
         use_sigmoid: bool = False,
     ):
         super(LHUC, self).__init__()
-        assert (
-            item_args.hidden_layer_num == user_args.hidden_layer_num
-        ), f"{item_args.hidden_layer_num} != {user_args.hidden_layer_num}"
+        assert item_args.hidden_layer_num == user_args.hidden_layer_num, (
+            f"{item_args.hidden_layer_num} != {user_args.hidden_layer_num}"
+        )
         self.item_branch = DNN(
             item_args.dim_in,
             item_args.dim_hidden,
@@ -93,9 +93,7 @@ class LHUC(nn.Module):
         out = x_i * x_u
         return out
 
-    def forward(
-        self, item_input: Tensor, user_input: Tensor
-    ) -> Tensor:
+    def forward(self, item_input: Tensor, user_input: Tensor) -> Tensor:
         x_i = self.item_branch.fc_in(item_input)
         x_u = self.user_branch.fc_in(user_input)
         x_i = self._cross(x_i, x_u)

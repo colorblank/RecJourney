@@ -81,7 +81,7 @@ class BaseTrainer(nn.Module):
         """
         acc, auc, logloss = self.cal_metric(y_pred, y_true)
         logger.info(
-            f"[Val] Epoch: {epoch+1}, Acc: {acc:.5f}, AUC: {auc:.5f}, Logloss: {logloss:.5f}."
+            f"[Val] Epoch: {epoch + 1}, Acc: {acc:.5f}, AUC: {auc:.5f}, Logloss: {logloss:.5f}."
         )
 
     def evaluation(
@@ -215,7 +215,7 @@ class BaseTrainer(nn.Module):
         acc, auc, logloss = metrics if metrics else (None, None, None)
         # 打印训练信息，包括轮次、数据块索引、样本计数、损失值及各项评估指标（如有）
         logger.info(
-            f"[训练] 轮次: {epoch+1}, 数据块: {chunk_index}, 样本数: {sample_count}, 损失: {loss:.5f}, \
+            f"[训练] 轮次: {epoch + 1}, 数据块: {chunk_index}, 样本数: {sample_count}, 损失: {loss:.5f}, \
 准确率: {acc:.5f}, AUC: {auc:.5f} 对数损失: {logloss:.5f}."
         )
 
@@ -301,7 +301,7 @@ class BaseTrainer(nn.Module):
 
     def train(self):
         for e in range(self.epochs):
-            logger.info(f"epoch {e+1}")
+            logger.info(f"epoch {e + 1}")
             self.train_one_epoch(e)
             self.evaluation(e)
 

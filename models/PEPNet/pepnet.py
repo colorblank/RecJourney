@@ -76,9 +76,7 @@ class GateNeuralUnit(nn.Module):
         )
         self.gamma = gamma  # 门控系数
 
-    def forward(
-        self, f_domain: Tensor, f_general: Tensor = None
-    ) -> Tensor:
+    def forward(self, f_domain: Tensor, f_general: Tensor = None) -> Tensor:
         """
         执行前向传播操作，将特定领域的特征和通用特征结合起来，并通过门控机制产生最终输出。
 
@@ -261,9 +259,7 @@ class PEPNet(nn.Module):
             bias=bias,
         )
 
-    def forward(
-        self, f_domain: Tensor, f_side: Tensor, f_general: Tensor
-    ) -> Tensor:
+    def forward(self, f_domain: Tensor, f_side: Tensor, f_general: Tensor) -> Tensor:
         """
         前向传播函数，输入领域特征、侧边特征和通用特征，输出任务特征。
 

@@ -46,12 +46,12 @@ class CoActionUnit(nn.Module):
         Returns:
             out: (batch, dim)
         """
-        assert (
-            ad.shape[1] == self.total_dims
-        ), f"expected ad to have shape (batch, {self.total_dims}), got {ad.shape[1]}"
-        assert (
-            his_items.shape[2] == self.emb_dim
-        ), f"expected his_items to have shape (batch, seq, emb_dim), got {his_items.shape[2]}"
+        assert ad.shape[1] == self.total_dims, (
+            f"expected ad to have shape (batch, {self.total_dims}), got {ad.shape[1]}"
+        )
+        assert his_items.shape[2] == self.emb_dim, (
+            f"expected his_items to have shape (batch, seq, emb_dim), got {his_items.shape[2]}"
+        )
 
         out = list()
         for o in range(self.orders):
