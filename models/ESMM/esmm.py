@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -75,7 +73,7 @@ class DNN(nn.Module):
 
     def __init__(
         self,
-        dims: List[int],
+        dims: list[int],
         bias: bool = True,
         act: str = "relu",
         dropout: float = 0.0,
@@ -132,8 +130,8 @@ class ESMM(nn.Module):
 
     def __init__(
         self,
-        cvr_dims: List[int],
-        ctr_dims: List[int],
+        cvr_dims: list[int],
+        ctr_dims: list[int],
         bias: bool = True,
         act: str = "relu",
         dropout: float = 0.0,
@@ -147,7 +145,7 @@ class ESMM(nn.Module):
         # 初始化点击率（CTR）的深度神经网络
         self.ctr_dnn = DNN(ctr_dims, bias=bias, act=act, dropout=dropout)
 
-    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor]:
+    def forward(self, x: Tensor) -> tuple[Tensor, Tensor]:
         """
         定义前向传播过程。
 
