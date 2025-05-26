@@ -50,20 +50,21 @@ class Pipeline:
         对 ops 中的每个操作进行处理，如果操作是一个字典，则尝试从字典中获取函数名和参数，
         并通过 partial 函数预设参数，将操作转换为可调用对象。
         """
-        for i, op in enumerate(self.ops):
+        for i, op_item in enumerate(self.ops):
             # 遍历操作列表，对每个操作进行处理
-            # funcs = list()
-            for func_name, param_dict in op.items():
+            if isinstance(op_item, dict):
+                # 假设每个字典只有一个键值对
+                func_name, param_dict = next(iter(op_item.items()))
                 # 导入操作模块，并根据函数名获取具体函数
                 op_hub = importlib.import_module(".operation", package="preprocess")
                 func = getattr(op_hub, func_name)
                 # 根据是否提供参数，决定是否使用 partial 包装函数
-                if len(param_dict) == 0:
+                if not param_dict:  # 检查字典是否为空
                     func_with_param = func
                 else:
                     func_with_param = partial(func, **param_dict)
                 # 更新 ops 列表中的操作为可调用对象
-            self.ops[i] = func_with_param
+                self.ops[i] = func_with_param
 
 
 @dataclass
@@ -93,9 +94,9 @@ class DataSetConfig:
     chunksize: int | None = None
     names: list[str] | None = None  # 数据文件列名
     label_columns: list[str] | None = None  # 标签列名
-    join_type: Literal["concat", "merge"] = None
+    join_type: Literal["concat", "merge"] | None = None
     join_on: list[str] | None = None
-    how: Literal["inner", "left"] = None
+    how: Literal["inner", "left"] | None = None
     join_names: list[str] | None = None  # 另一个数据集的名称，用于合并
 
 
@@ -126,9 +127,9 @@ class Config:
     test_set: DataSetConfig | None = None
     combo_set: DataSetConfig | None = None
 
-    sparse_dim: int | None = 0
-    dense_dim: int | None = 0
-    total_dim: int | None = 0
+    sparse_dim: int = 0
+    dense_dim: int = 0
+    total_dim: int = 0
     defaul_emb_dim: int | None = 8
     emb_param_dict: dict[str, tuple[int, int]] = field(default_factory=dict)
 
@@ -136,25 +137,35 @@ class Config:
         """
         在实例初始化后执行的特殊方法，用于进一步配置特征管道和计算特征维度。
         """
-        self.train_set = DataSetConfig(**self.train_set)
-        self.val_set = DataSetConfig(**self.val_set)
-        self.test_set = DataSetConfig(**self.test_set)
+        if isinstance(self.train_set, dict):
+            self.train_set = DataSetConfig(**self.train_set)
+        if isinstance(self.val_set, dict):
+            self.val_set = DataSetConfig(**self.val_set)
+        if isinstance(self.test_set, dict):
+            self.test_set = DataSetConfig(**self.test_set)
+        if isinstance(self.combo_set, dict):
+            self.combo_set = DataSetConfig(**self.combo_set)
+
         # 遍历特征处理管道列表，对每个管道进行实例化并根据特征类型更新稀疏和密集特征维度
-        for i, pipe in enumerate(self.pipelines):
-            cur_pipe = Pipeline(**pipe)  # 使用解包操作符**实例化Pipeline对象
-            self.pipelines[i] = cur_pipe  # 更新列表中的元素为实例化的Pipeline对象
+        for i, pipe_item in enumerate(self.pipelines):
+            if isinstance(pipe_item, dict):
+                cur_pipe = Pipeline(**pipe_item)  # 使用解包操作符**实例化Pipeline对象
+                self.pipelines[i] = cur_pipe  # 更新列表中的元素为实例化的Pipeline对象
+            else:
+                cur_pipe = pipe_item # 已经是Pipeline实例
+
             if cur_pipe.feature_type.endswith("sparse") and cur_pipe.source != "label":
-                if cur_pipe.emb_dim:
+                cur_emb_dim = 0
+                if cur_pipe.emb_dim is not None:
                     cur_emb_dim = cur_pipe.emb_dim
-                elif self.defaul_emb_dim:
+                elif self.defaul_emb_dim is not None:
                     cur_emb_dim = self.defaul_emb_dim
-                else:
-                    cur_emb_dim = 0
-                self.sparse_dim += (
-                    cur_emb_dim  # 如果特征类型为稀疏，累加嵌入维度到稀疏特征维度
-                )
+
+                self.sparse_dim += cur_emb_dim  # 如果特征类型为稀疏，累加嵌入维度到稀疏特征维度
+                
+                num_embeddings_val = cur_pipe.num_embeddings if cur_pipe.num_embeddings is not None else 0
                 self.emb_param_dict[cur_pipe.col_out] = (
-                    cur_pipe.num_embeddings,  # 获取特征名称对应的嵌入维度和嵌入向量维度
+                    num_embeddings_val,  # 获取特征名称对应的嵌入维度和嵌入向量维度
                     cur_emb_dim,
                 )
             elif cur_pipe.feature_type.endswith("dense"):
