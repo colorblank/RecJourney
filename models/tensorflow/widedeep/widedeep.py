@@ -1,10 +1,10 @@
 import tensorflow as tf
-from typing import Dict, List
+
 from ..input_layer import InputLayer
 
 
 class WideAndDeep(tf.keras.Model):
-    def __init__(self, feature_specs: Dict[str, Dict], emb_dims: List[int], **kwargs):
+    def __init__(self, feature_specs: dict[str, dict], emb_dims: list[int], **kwargs):
         super(WideAndDeep, self).__init__(**kwargs)
         self.feature_specs = feature_specs
         self.emb_dims = emb_dims
@@ -115,7 +115,7 @@ class WideAndDeep(tf.keras.Model):
             )
         return tf.keras.Sequential(layers)
 
-    def call(self, inputs: Dict[str, tf.Tensor]) -> tf.Tensor:
+    def call(self, inputs: dict[str, tf.Tensor]) -> tf.Tensor:
         # Assuming inputs is a dictionary containing 'deep_features' and 'wide_features' tensors
         deep_features = inputs["deep_features"]
         wide_features = inputs["wide_features"]
