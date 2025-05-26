@@ -1,7 +1,8 @@
 import importlib
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import partial
-from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Literal
 
 DTYPES = Literal["int", "float"]
 SOURCES = Literal["user", "item", "context", "label"]
@@ -33,14 +34,14 @@ class Pipeline:
 
     col_in: str
     col_out: str
-    fillna: Union[str, int, float]
+    fillna: str | int | float
     source: SOURCES
     feature_type: FEATURE_TYPES
-    ops: List[Union[Callable, Dict[Any, Any]]]
-    dtype: Optional[DTYPES] = None
-    tensor_type: Optional[DTYPES] = None
-    num_embeddings: Optional[int] = None
-    emb_dim: Optional[int] = None
+    ops: list[Callable | dict[Any, Any]]
+    dtype: DTYPES | None = None
+    tensor_type: DTYPES | None = None
+    num_embeddings: int | None = None
+    emb_dim: int | None = None
 
     def __post_init__(self):
         """
@@ -86,16 +87,16 @@ class DataSetConfig:
 
     set_name: str
     file_type: Literal["csv", "excel"]
-    data_path: Union[str, List[str]]
+    data_path: str | list[str]
     sep: str  # 数据文件分隔符，默认为 ","
-    header: Optional[int] = 0
-    chunksize: Optional[int] = None
-    names: Optional[List[str]] = None  # 数据文件列名
-    label_columns: Optional[List[str]] = None  # 标签列名
+    header: int | None = 0
+    chunksize: int | None = None
+    names: list[str] | None = None  # 数据文件列名
+    label_columns: list[str] | None = None  # 标签列名
     join_type: Literal["concat", "merge"] = None
-    join_on: Optional[List[str]] = None
+    join_on: list[str] | None = None
     how: Literal["inner", "left"] = None
-    join_names: Optional[List[str]] = None  # 另一个数据集的名称，用于合并
+    join_names: list[str] | None = None  # 另一个数据集的名称，用于合并
 
 
 @dataclass
@@ -119,17 +120,17 @@ class Config:
     """
 
     train_set: DataSetConfig
-    pipelines: List[Pipeline]
+    pipelines: list[Pipeline]
 
-    val_set: Optional[DataSetConfig] = None
-    test_set: Optional[DataSetConfig] = None
-    combo_set: Optional[DataSetConfig] = None
+    val_set: DataSetConfig | None = None
+    test_set: DataSetConfig | None = None
+    combo_set: DataSetConfig | None = None
 
-    sparse_dim: Optional[int] = 0
-    dense_dim: Optional[int] = 0
-    total_dim: Optional[int] = 0
-    defaul_emb_dim: Optional[int] = 8
-    emb_param_dict: Dict[str, Tuple[int, int]] = field(default_factory=dict)
+    sparse_dim: int | None = 0
+    dense_dim: int | None = 0
+    total_dim: int | None = 0
+    defaul_emb_dim: int | None = 8
+    emb_param_dict: dict[str, tuple[int, int]] = field(default_factory=dict)
 
     def __post_init__(self):
         """
