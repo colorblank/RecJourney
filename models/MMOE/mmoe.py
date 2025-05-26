@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List, Optional
 
 import torch
 import torch.nn as nn
@@ -71,7 +70,7 @@ class Expert(nn.Module):
         self,
         dim_in: int,
         dim_out: int,
-        dim_hidden: List[int] = None,
+        dim_hidden: list[int] = None,
         dropout: float = 0.1,
     ) -> None:
         super().__init__()
@@ -102,13 +101,13 @@ class Expert(nn.Module):
 
 @dataclass
 class HeadArgs:
-    dims: List[int]
-    activation: Optional[str] = "relu"
-    bias: Optional[bool] = True
+    dims: list[int]
+    activation: str | None = "relu"
+    bias: bool | None = True
 
 
 class PredictHead(nn.Module):
-    def __init__(self, dims: List[int], activation: str = "relu", bias: bool = True):
+    def __init__(self, dims: list[int], activation: str = "relu", bias: bool = True):
         super().__init__()
         self.layer_num = len(dims) - 1
         layers = list()
@@ -172,9 +171,9 @@ class SharedBottomModel(nn.Module):
         self,
         dim_in: int,
         dim_out: int,
-        dim_hidden: List[int],
+        dim_hidden: list[int],
         # prev is bottom, next is tower
-        dims: List[int],
+        dims: list[int],
         task_num: int,
         dropout: float = 0.1,
         activation: str = "relu",
@@ -191,7 +190,7 @@ class SharedBottomModel(nn.Module):
         )
         self.task_num = task_num
 
-    def forward(self, x: Tensor) -> List[Tensor]:
+    def forward(self, x: Tensor) -> list[Tensor]:
         x = self.bottom(x)
         res = []
         for i in range(self.task_num):
@@ -205,11 +204,11 @@ class SharedBottomModel(nn.Module):
 class MMOEArgs:
     dim_in: int
     dim_out: int
-    dim_hidden: List[int]
+    dim_hidden: list[int]
     expert_num: int
     task_num: int
-    dropout: Optional[float] = 0.1
-    bias: Optional[bool] = True
+    dropout: float | None = 0.1
+    bias: bool | None = True
 
 
 class Multi_Gate_MOE(nn.Module):
@@ -236,7 +235,7 @@ class Multi_Gate_MOE(nn.Module):
         self,
         dim_in: int,
         dim_out: int,
-        dim_hidden: List[int],
+        dim_hidden: list[int],
         expert_num: int,
         task_num: int,
         dropout: float = 0.1,
@@ -259,7 +258,7 @@ class Multi_Gate_MOE(nn.Module):
             {f"gate_{i}": Gate(dim_in, expert_num, bias) for i in range(task_num)}
         )
 
-    def forward(self, x: Tensor) -> List[Tensor]:
+    def forward(self, x: Tensor) -> list[Tensor]:
         """
         前向传播函数。
 
@@ -299,7 +298,7 @@ class MMOE(nn.Module):
             }
         )
 
-    def forward(self, x: Tensor) -> List[Tensor]:
+    def forward(self, x: Tensor) -> list[Tensor]:
         feats = self.mmoe(x)
         outs = list()
         for i in range(self.task_num):
