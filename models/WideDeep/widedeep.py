@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from typing import List
 
 
 class WideAndDeep(nn.Module):
@@ -27,7 +26,7 @@ class WideAndDeep(nn.Module):
         forward: 模型的前向传播
     """
 
-    def __init__(self, deep_input_dim: int, wide_input_dim: int, emb_dims: List[int]):
+    def __init__(self, deep_input_dim: int, wide_input_dim: int, emb_dims: list[int]):
         super(WideAndDeep, self).__init__()
         self.emb_dims = emb_dims
         self.dlayers = self._deep_layer(deep_input_dim)
