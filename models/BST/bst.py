@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-
 from torch import Tensor
 
 
@@ -30,7 +29,7 @@ class Transformer(nn.Module):
         dim_feedforward: int,
         dropout: float = 0.2,
     ):
-        super(Transformer, self).__init__()
+        super().__init__()
         self.linear = nn.Linear(d_model, d_model * 3, bias=False)
         self.attn = nn.MultiheadAttention(
             d_model, nhead, dropout=dropout, batch_first=True
