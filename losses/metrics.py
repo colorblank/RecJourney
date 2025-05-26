@@ -1,8 +1,8 @@
 from collections import defaultdict
-from typing import Any, List
+from typing import Any
 
 
-def calculate_auc(y_true: List[int], y_pred: List[float]) -> float:
+def calculate_auc(y_true: list[int], y_pred: list[float]) -> float:
     """
     Calculate AUC (Area Under Curve) for binary classification.
     Args:
@@ -31,7 +31,7 @@ def calculate_auc(y_true: List[int], y_pred: List[float]) -> float:
 
 
 def calculdate_gauc(
-    y_true: List[int], y_pred: List[float], user_ids: List[Any]
+    y_true: list[int], y_pred: list[float], user_ids: list[Any]
 ) -> float:
     """
     Calculate Group AUC (Area Under Curve) for binary classification.
