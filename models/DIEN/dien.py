@@ -1,5 +1,3 @@
-from typing import List
-
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -137,7 +135,7 @@ class ActivationUnit(nn.Module):
     def __init__(
         self,
         dim_in: int,
-        hidden_dims: List[int],
+        hidden_dims: list[int],
         dim_out: int = 1,
         act: str = "prelu",
         bias: bool = True,
@@ -193,7 +191,7 @@ class AttentionLayer(nn.Module):
     def __init__(
         self,
         emb_dim: int,
-        hidden_dims: List[int],
+        hidden_dims: list[int],
         return_score: bool = False,
         bias: bool = True,
         act: str = "sigmoid",
@@ -238,7 +236,7 @@ class PredictHead(nn.Module):
     def __init__(
         self,
         dim_in: int,
-        hidden_dims: List[int],
+        hidden_dims: list[int],
         out_dim: int = 1,
         act: str = "sigmoid",
         bias: bool = True,
@@ -262,8 +260,8 @@ class DIEN(nn.Module):
         self,
         user_emb_dim: int,
         emb_dim: int,
-        hidden_dims: List[int],
-        predict_head_dims: List[int],
+        hidden_dims: list[int],
+        predict_head_dims: list[int],
         num_classes: int = 1,
         act: str = "relu",
         bias: bool = True,
