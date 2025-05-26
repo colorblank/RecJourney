@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from collections.abc import Callable
 
 import pandas as pd
 import torch
@@ -34,7 +34,7 @@ class BaseTrainer(nn.Module):
         epochs: int,
         lr: float,
         loss_fn: Callable = nn.BCELoss(),
-        optimizer: torch.optim.Optimizer = torch.optim.Adam,
+        optimizer: type[torch.optim.Optimizer] = torch.optim.Adam,
         device: str = "cpu",
         log_interval: int = 10,
     ) -> None:
@@ -48,7 +48,7 @@ class BaseTrainer(nn.Module):
 
         self.emb_dict = emb_dict  # 嵌入层字典
         self.base_model = base_model.to(device)  # 基础模型
-        self.optimizer = optimizer(self.parameters(), lr=lr)  # 优化器
+        self.optimizer = optimizer(list(self.parameters()), lr=lr)  # 优化器 # type: ignore
 
         self.log_interval = log_interval  # 日志打印间隔
 
@@ -56,14 +56,26 @@ class BaseTrainer(nn.Module):
         self.val_y_dict = dict()
         self._load_validation_data()
 
-    def _load_validation_data(self):
-        df = pd.read_csv(
-            self.cfg.val_set.data_path,
-            sep=self.cfg.val_set.sep,
-            header=self.cfg.val_set.header,
-            chunksize=self.cfg.val_set.chunksize,
-            names=self.cfg.val_set.names,
-        )
+    def _load_validation_data(self) -> None:
+        if self.cfg.val_set is None:
+            logger.warning("验证集配置为空，跳过加载验证数据。")
+            return
+
+        data_path = self.cfg.val_set.data_path
+        if isinstance(data_path, list):
+            data_path = data_path[0]
+
+        read_csv_params = {
+            "filepath_or_buffer": data_path,
+            "sep": self.cfg.val_set.sep,
+            "header": self.cfg.val_set.header,
+            "names": self.cfg.val_set.names,
+        }
+        if self.cfg.val_set.chunksize is not None:
+            read_csv_params["chunksize"] = self.cfg.val_set.chunksize
+
+        df = pd.read_csv(**read_csv_params)
+
         for feat_idx, pipe in enumerate(self.cfg.pipelines):
             # each column
             tensor = self._chunk_to_tensor(df, pipe)
@@ -75,7 +87,7 @@ class BaseTrainer(nn.Module):
 
     def evaluation_one_predict(
         self, y_pred: Tensor, y_true: Tensor, epoch: int
-    ) -> Tensor:
+    ) -> None:
         """
         用于评估模型在验证集上的预测结果。
         """
@@ -103,9 +115,14 @@ class BaseTrainer(nn.Module):
         self, chunk: pd.DataFrame, pipe: Pipeline, reduce: str = "sum"
     ):
         x = chunk[pipe.col_in]
-        x.fillna(pipe.fillna)
+        x = x.fillna(pipe.fillna) # fillna should be reassigned
         for op in pipe.ops:
-            x = x.apply(op)
+            if callable(op): # 确保op是可调用的
+                x = x.apply(op)
+            else:
+                # 如果op不是可调用的，这表示在dtypes.py中转换失败，或者ops中存在非预期的元素
+                # 可以在这里添加日志或错误处理
+                logger.error(f"操作 {op} 不可调用，跳过。")
         tensor = torch.tensor(x.to_list()).to(self.device)
 
         if pipe.feature_type.endswith("sparse") and pipe.source != "label":
@@ -124,31 +141,28 @@ class BaseTrainer(nn.Module):
         return tensor.to(self.device)
 
     def _preprocess(
-        self, x: Dict[str, Tensor], tensor_op: Optional[Callable] = None
+        self, x: dict[str, Tensor], tensor_op: Callable | None = None
     ) -> Tensor:
         if tensor_op is not None:
-            x = tensor_op(x)
-        else:
-            x = torch.cat(list(x.values()), dim=1).float()
+            return tensor_op(x)
+        return torch.cat(list(x.values()), dim=1).float()
 
-        return x
-
-    def forward(self, x: Dict[str, Tensor]) -> Tensor:
-        x = self._preprocess(x)
-        return self.base_model(x)
+    def forward(self, x: dict[str, Tensor]) -> Tensor:
+        processed_x = self._preprocess(x)
+        return self.base_model(processed_x)
 
     def cal_metric(self, y_pred: Tensor, y_true: Tensor):
-        y_pred = y_pred.detach().flatten().cpu().numpy()
-        y_true = y_true.detach().flatten().cpu().numpy().astype(int)
-        auc = roc_auc_score(y_true, y_pred)
-        accuracy = accuracy_score(y_true, (y_pred > 0.5).astype(int))
-        logloss = log_loss(y_true, y_pred)
+        y_pred_np = y_pred.detach().flatten().cpu().numpy()
+        y_true_np = y_true.detach().flatten().cpu().numpy()
+        auc = roc_auc_score(y_true_np.astype(int), y_pred_np)
+        accuracy = accuracy_score(y_true_np.astype(int), (y_pred_np > 0.5).astype(int))
+        logloss = log_loss(y_true_np.astype(int), y_pred_np)
         return accuracy, auc, logloss
 
     def _calculate_loss(
         self,
-        y_pred: Union[List[Tensor], Tensor],
-        y_true: Dict[str, Tensor],
+        y_pred: list[Tensor] | Tensor,
+        y_true: dict[str, Tensor],
     ) -> Tensor:
         """
         根据预测值与真实标签计算并返回损失值。
@@ -175,8 +189,8 @@ class BaseTrainer(nn.Module):
         # 判断y_pred是否为张量列表
         elif isinstance(y_pred, list):
             # 对y_pred中每一项计算损失后累加得到总损失
+            loss = torch.tensor(0.0, device=self.device)  # 初始化为Tensor
             i = 0
-            loss = 0
             for _, y_t in y_true.items():
                 loss = loss + self.loss_fn(y_pred[i], y_t)
                 i += 1
@@ -190,10 +204,8 @@ class BaseTrainer(nn.Module):
         epoch: int,  # 当前训练轮次
         chunk_index: int,  # 当前数据块的索引
         sample_count: int,  # 目前为止处理的样本总数
-        loss: Tensor,  # 当前数据块的损失值
-        metrics: Optional[
-            Tuple[float, float, float]
-        ] = None,  # 额外指标元组（准确率, AUC, 对数损失）, 默认为None
+        loss: float,  # 当前数据块的损失值
+        metrics: tuple[float, float, float] | None = None,  # 额外指标元组（准确率, AUC, 对数损失）, 默认为None
     ) -> None:
         """
         记录训练过程中的评估指标。
@@ -221,8 +233,8 @@ class BaseTrainer(nn.Module):
 
     def train_one_chunk(
         self,
-        x: Dict[str, Tensor],
-        y: Dict[str, Tensor],
+        x: dict[str, Tensor],
+        y: dict[str, Tensor],
         chunk_index: int,
         chunk_size: int,
         epoch: int,
@@ -259,7 +271,11 @@ class BaseTrainer(nn.Module):
             acc, auc, logloss = self.cal_metric(y_pred, y[list(y.keys())[0]])
             # 记录当前数据块的指标
             self._log_metrics(
-                epoch, chunk_index, sample_count, loss.item(), (acc, auc, logloss)
+                epoch,
+                chunk_index,
+                sample_count,
+                loss.item(),
+                (float(acc), float(auc), float(logloss)),
             )
 
         # 更新参数
@@ -275,13 +291,20 @@ class BaseTrainer(nn.Module):
         epoch: int, 当前训练的epoch数。
         """
         # 从CSV文件中读取训练数据，按指定的分隔符和块大小进行分块读取
-        df = pd.read_csv(
-            self.cfg.train_set.data_path,
-            sep=self.cfg.train_set.sep,
-            header=self.cfg.train_set.header,
-            chunksize=self.cfg.train_set.chunksize,
-            names=self.cfg.train_set.names,
-        )
+        data_path = self.cfg.train_set.data_path
+        if isinstance(data_path, list):
+            data_path = data_path[0]  # 如果是列表，只取第一个路径
+
+        read_csv_params = {
+            "filepath_or_buffer": data_path,
+            "sep": self.cfg.train_set.sep,
+            "header": self.cfg.train_set.header,
+            "names": self.cfg.train_set.names,
+        }
+        if self.cfg.train_set.chunksize is not None:
+            read_csv_params["chunksize"] = self.cfg.train_set.chunksize
+
+        df = pd.read_csv(**read_csv_params)
         # 遍历每个数据块进行训练
         for chunk_idx, chunk in enumerate(df):
             # 初始化特征和标签的字典
@@ -299,7 +322,7 @@ class BaseTrainer(nn.Module):
             # 使用当前数据块进行模型训练
             self.train_one_chunk(x_dict, y_dict, chunk_idx, chunk.shape[0], epoch)
 
-    def train(self):
+    def run_train(self):
         for e in range(self.epochs):
             logger.info(f"epoch {e + 1}")
             self.train_one_epoch(e)
