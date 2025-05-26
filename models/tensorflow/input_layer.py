@@ -1,9 +1,8 @@
 import tensorflow as tf
-from typing import Dict, Tuple
 
 
 class InputLayer(tf.keras.layers.Layer):
-    def __init__(self, feature_specs: Dict[str, Dict], **kwargs):
+    def __init__(self, feature_specs: dict[str, dict], **kwargs):
         super(InputLayer, self).__init__(**kwargs)
         self.feature_specs = feature_specs
         self.embedding_layers = {}
@@ -22,8 +21,8 @@ class InputLayer(tf.keras.layers.Layer):
                 )
 
     def call(
-        self, inputs: Dict[str, tf.Tensor]
-    ) -> Tuple[tf.Tensor, Dict[str, tf.Tensor]]:
+        self, inputs: dict[str, tf.Tensor]
+    ) -> tuple[tf.Tensor, dict[str, tf.Tensor]]:
         embedded_features = {}
         numerical_features = []
 
