@@ -1,4 +1,4 @@
-from typing import List, Literal
+from typing import Literal
 
 import torch
 import torch.nn as nn
@@ -16,7 +16,7 @@ class LinearReLU(nn.Module):
     """
 
     def __init__(self, dim_in: int, dim_hidden: int, bias: bool = True) -> None:
-        super(LinearReLU, self).__init__()
+        super().__init__()
         self.linear = nn.Linear(dim_in, dim_hidden, bias=bias)
         self.relu = nn.ReLU()
 
@@ -91,7 +91,7 @@ class DCNV2(nn.Module):
         self,
         dim_in: int,
         cross_layer_num: int,
-        deep_hidden_dims: List[int],
+        deep_hidden_dims: list[int],
         mode: Literal["stack", "parallel"] = "parallel",
         num_classes: int = 1,
         bias: bool = True,
