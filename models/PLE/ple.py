@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from typing import List
+from torch import Tensor
 
 
 class LinearReLUDropOut(nn.Module):
@@ -55,7 +55,7 @@ class Expert(nn.Module):
         self,
         dim_in: int,
         dim_out: int,
-        dim_hidden: List[int] = None,
+        dim_hidden: list[int] | None = None,
         dropout: float = 0.1,
     ) -> None:
         super().__init__()
@@ -106,7 +106,7 @@ class Gate(nn.Module):
         )  # 创建一个线性变换，用于生成专家的选择概率
         self.dropout = nn.Dropout(p=dropout)  # 应用dropout防止极化
 
-    def forward(self, x: torch.tensor) -> torch.tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         前向传播逻辑。
 
@@ -150,7 +150,7 @@ class CustomizedGateControl(nn.Module):
         self,
         dim_in: int,
         dim_out: int,
-        dim_hidden: List[int],
+        dim_hidden: list[int],
         shared_expert_num: int,
         unique_expert_num: int,
         task_num: int,
@@ -187,7 +187,7 @@ class CustomizedGateControl(nn.Module):
             }
         )
 
-    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         前向传播函数。
 
@@ -229,46 +229,119 @@ class CustomizedGateControl(nn.Module):
             gate_weight = self.gate[f"gate_{j}"](x)
             f = torch.einsum("bde,be->bd", feat_of_task_i, gate_weight)
             feats.append(f)
-        return feats
+        return torch.cat(feats, dim=1)
 
 
 class PLE(nn.Module):
-    """Progressive Layered Extraction
+    """Progressive Layered Extraction (PLE) 模型。
 
-    paper: Progressive Layered Extraction (PLE): \
-            A Novel Multi-Task Learning (MTL) Model \
-            for Personalized Recommendations
-    url: https://dl.acm.org/doi/abs/10.1145/3383313.3412236
-    Arguments:
-        nn -- _description_
+    该模型通过多层门控专家网络实现多任务学习，
+    有效地分离和共享不同任务的特征。
+
+    论文: Progressive Layered Extraction (PLE):
+          A Novel Multi-Task Learning (MTL) Model
+          for Personalized Recommendations
+    URL: https://dl.acm.org/doi/abs/10.1145/3383313.3412236
+
+    参数:
+        dim_in (int): 输入特征的维度。
+        dim_out (List[int]): 每个任务输出的维度列表。
+        dim_hidden (List[int]): 专家网络的隐藏层维度列表。
+        shared_expert_num (int): 共享专家的数量。
+        unique_expert_num (int): 每个任务独有专家的数量。
+        task_num (int): 任务的数量。
+        ple_layers (int): PLE 网络的层数。
+        dropout (float, 可选): Dropout 比例，默认为 0.1。
+        bias (bool, 可选): 线性层是否使用偏置，默认为 True。
     """
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        pass
+    def __init__(
+        self,
+        dim_in: int,
+        dim_out: list[int],
+        dim_hidden: list[int],
+        shared_expert_num: int,
+        unique_expert_num: int,
+        task_num: int,
+        ple_layers: int,
+        dropout: float = 0.1,
+        bias: bool = True,
+    ) -> None:
+        super().__init__()
+        self.task_num = task_num
+        self.ple_layers = ple_layers
+        self.towers = nn.ModuleDict()
+        self.ple_nets = nn.ModuleList()
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        pass
+        # 初始化 PLE 层
+        for i in range(ple_layers):
+            self.ple_nets.append(
+                CustomizedGateControl(
+                    dim_in if i == 0 else self.task_num * dim_hidden[-1],
+                    dim_hidden[-1],
+                    dim_hidden,
+                    shared_expert_num,
+                    unique_expert_num,
+                    task_num,
+                    dropout,
+                    bias,
+                )
+            )
+
+        # 初始化每个任务的塔网络 (Tower Network)
+        for i in range(task_num):
+            self.towers[f"tower_{i}"] = nn.Sequential(
+                LinearReLUDropOut(dim_hidden[-1], dim_hidden[-1], p=dropout),
+                nn.Linear(dim_hidden[-1], dim_out[i], bias),
+            )
+
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
+        """
+        PLE 模型的前向传播。
+
+        参数:
+            x (torch.Tensor): 输入特征张量。
+
+        返回:
+            List[torch.Tensor]: 每个任务的输出预测列表。
+        """
+        # 逐层通过 PLE 网络
+        for i in range(self.ple_layers):
+            x = self.ple_nets[i](x)
+
+        # 通过每个任务的塔网络进行预测
+        # x 是一个拼接后的张量，需要将其拆分回每个任务的特征
+        # 每个任务的特征维度是 dim_hidden[-1]
+        outputs = []
+        for i in range(self.task_num):
+            # 从拼接的张量中提取当前任务的特征
+            task_feature = x[:, i * dim_hidden[-1] : (i + 1) * dim_hidden[-1]]
+            outputs.append(self.towers[f"tower_{i}"](task_feature))
+        return outputs
 
 
 if __name__ == "__main__":
     batch_size = 2
     dim_in = 4
-    dim_out = 64
+    dim_out = [1, 1]  # 两个任务，每个任务输出维度为 1
     dim_hidden = [32, 16]
-    expert_num = 4
+    shared_expert_num = 4
+    unique_expert_num = 2
     task_num = 2
-    model = CustomizedGateControl(
+    ple_layers = 2  # PLE 网络的层数
+
+    model = PLE(
         dim_in,
         dim_out,
         dim_hidden,
-        expert_num,
-        expert_num // 2,
+        shared_expert_num,
+        unique_expert_num,
         task_num,
+        ple_layers,
         dropout=0.1,
         bias=True,
     )
     x = torch.randn(batch_size, dim_in)
-    feats = model(x)
-    for f in feats:
-        print(f.size())  # [batch, dim_out]
+    outputs = model(x)
+    for i, output in enumerate(outputs):
+        print(f"Task {i} output size: {output.size()}")
