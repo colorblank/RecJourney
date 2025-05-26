@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 import torch
 import torch.nn as nn
@@ -10,7 +9,7 @@ from torch import Tensor
 class SEIlArgs:
     dim_in: int
     dim_out: int
-    dim_hidden: List[int]
+    dim_hidden: list[int]
     expert_num: int
 
 
@@ -18,7 +17,7 @@ class SEIlArgs:
 class CGCArgs:
     dim_in: int
     dim_out: int
-    dim_hidden: List[int]
+    dim_hidden: list[int]
     shared_expert_num: int
     unique_expert_num: int
     task_num: int
@@ -110,7 +109,7 @@ class Expert(nn.Module):
         self,
         dim_in: int,
         dim_out: int,
-        dim_hidden: List[int] = None,
+        dim_hidden: list[int] = None,
         bias: bool = True,
     ) -> None:
         super().__init__()
@@ -144,7 +143,7 @@ class SEI(nn.Module):
     """
 
     def __init__(
-        self, dim_in: int, dim_out: int, dim_hidden: List[int], expert_num: int
+        self, dim_in: int, dim_out: int, dim_hidden: list[int], expert_num: int
     ) -> None:
         super().__init__()
         # 初始化专家网络，存储在一个模块字典中
@@ -199,7 +198,7 @@ class SharedExpertNet(nn.Module):
         self,
         feat_dim_in: int,
         feat_dim_out: int,
-        feat_dim_hidden: List[int],
+        feat_dim_hidden: list[int],
         shared_expert_num: int,
         bias: bool = True,
     ) -> None:
@@ -291,7 +290,7 @@ class CustomizedGateControl(nn.Module):
         self,
         dim_in: int,
         dim_out: int,
-        dim_hidden: List[int],
+        dim_hidden: list[int],
         shared_expert_num: int,
         unique_expert_num: int,
         task_num: int,
@@ -327,7 +326,7 @@ class CustomizedGateControl(nn.Module):
             }
         )
 
-    def forward(self, x: Tensor) -> List[Tensor]:
+    def forward(self, x: Tensor) -> list[Tensor]:
         """
         前向传播函数。
 
@@ -429,7 +428,7 @@ class HiNet(nn.Module):
 
     def forward(
         self, x: Tensor, scene_emb: Tensor, scene_indicator: Tensor
-    ) -> List[Tensor]:
+    ) -> list[Tensor]:
         """
         前向传播函数，结合特定专家的输出、共享专家的输出、场景嵌入和场景指示器来生成最终结果。
 
