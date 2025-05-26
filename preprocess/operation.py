@@ -1,36 +1,33 @@
 import math
 from datetime import datetime, timezone
-from typing import List, Optional, Union
 
 from xxhash import xxh32
 
 
-def str_hash(x: str, num_embeddings: int, seed: Optional[int] = None) -> int:
+def str_hash(x: str, num_embeddings: int, seed: int | None = None) -> int:
     seed = 1024 if seed is None else seed
     return xxh32(str(x), seed).intdigest() % num_embeddings
 
 
-def str_to_list(x: str, sep: str) -> List[int]:
+def str_to_list(x: str, sep: str) -> list[str]:
     return str.split(x, sep=sep)
 
 
-def list_str_split(x: List[str], sep: str) -> List[List[str]]:
+def list_str_split(x: list[str], sep: str) -> list[list[str]]:
     res = [s.split(sep) for s in x]
     return res
 
 
-def list_hash(
-    x: List[str], num_embeddings: int, seed: Optional[int] = None
-) -> List[int]:
+def list_hash(x: list[str], num_embeddings: int, seed: int | None = None) -> list[int]:
     seed = 1024 if seed is None else seed
     return [str_hash(i, num_embeddings, seed) for i in x]
 
 
-def padding(x: List[str], max_len: int, padding_value: str) -> List[str]:
+def padding(x: list[str], max_len: int, padding_value: str) -> list[str]:
     return x[:max_len] + [padding_value] * (max_len - len(x))
 
 
-def log1p(x: Union[int, float]) -> float:
+def log1p(x: int | float) -> float:
     return math.log1p(float(x))
 
 
@@ -38,9 +35,7 @@ def floor_divde(x: int, divide: int) -> int:
     return x // divide
 
 
-def clip(
-    x: Union[int, float], min_value: Union[int, float], max_value: Union[int, float]
-) -> Union[int, float]:
+def clip(x: int | float, min_value: int | float, max_value: int | float) -> int | float:
     return min(max_value, max(min_value, x))
 
 
@@ -86,7 +81,7 @@ def get_minute(x: datetime) -> int:
     Returns:
         int: _description_
     """
-    return x.min
+    return x.minute
 
 
 def get_month(x: datetime) -> int:
