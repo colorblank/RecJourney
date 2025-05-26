@@ -1,5 +1,3 @@
-from typing import List
-
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -131,7 +129,7 @@ class PPNet(nn.Module):
         gate_dim_in: int,
         gate_dim_hidden: int,
         task_num: int,
-        mlp_dims: List[int],
+        mlp_dims: list[int],
         gamma: float = 2.0,
         bias: bool = True,
         dropout: float = 0.1,
@@ -177,7 +175,7 @@ class PPNet(nn.Module):
         self,
         f_s: Tensor,
         o_ep: Tensor,
-    ) -> List[Tensor]:
+    ) -> list[Tensor]:
         """
         前向传播函数。
 
@@ -233,7 +231,7 @@ class PEPNet(nn.Module):
         domain_dim: int,
         side_dim: int,
         dim_hidden: int,
-        mlp_dims: List[int],
+        mlp_dims: list[int],
         task_num: int,
         gamma: float = 2.0,
         dropout: float = 0.1,
