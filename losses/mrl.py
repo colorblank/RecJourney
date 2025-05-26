@@ -1,13 +1,11 @@
-from typing import List
-
 import torch
 import torch.nn as nn
 from torch import Tensor
 
 
 class Matryoshka_CE_Loss(nn.Module):
-    def __init__(self, relative_importance: List[float] = None, **kwargs):
-        super(Matryoshka_CE_Loss, self).__init__()
+    def __init__(self, relative_importance: list[float] | None = None, **kwargs):
+        super().__init__()
         self.criterion = nn.CrossEntropyLoss(**kwargs)
         self.relative_importance = relative_importance
 
@@ -29,12 +27,12 @@ class Matryoshka_CE_Loss(nn.Module):
 class MRL_Linear_Layer(nn.Module):
     def __init__(
         self,
-        dims: List[int],
+        dims: list[int],
         num_classes: int,
         efficient: bool = False,
         bias: bool = True,
     ):
-        super(MRL_Linear_Layer, self).__init__()
+        super().__init__()
         self.dims = dims
         self.num_classes = num_classes
         self.efficient = efficient
@@ -48,14 +46,14 @@ class MRL_Linear_Layer(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         feat = list()
         for i, dim in enumerate(self.dims):
-            if self.efficient:
+            if isinstance(self.fc, nn.Linear):
                 bias = self.fc.bias if self.fc.bias else 0
                 z = x[:, :dim] @ self.fc.weight[:, :dim].t() + bias
                 # [B, D] x [D, C] = [B, C]
             else:
                 z = self.fc[i](x[:, :dim])
             feat.append(z)
-        return torch.stack(z, dim=0)  # [G, B, C]
+        return torch.stack(feat, dim=0)  # [G, B, C]
 
 
 if __name__ == "__main__":
