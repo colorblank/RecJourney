@@ -1,5 +1,3 @@
-from typing import List
-
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -38,7 +36,7 @@ class FactorizationMachine(nn.Module):
 
     def __init__(
         self,
-        num_fields: List[int],
+        num_fields: list[int],
         emb_dim: int,
         use_bias: bool = True,
         unify_embedding: bool = False,
