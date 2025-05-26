@@ -38,7 +38,9 @@ class CoActionUnit(nn.Module):
             self.total_dims += dims[i] * dims[i - 1]
         self.dims = dims
 
-    def forward(self, ad: Tensor, his_items: Tensor, mask: Tensor = None) -> Tensor:
+    def forward(
+        self, ad: Tensor, his_items: Tensor, mask: Tensor | None = None
+    ) -> Tensor:
         """
         Args:
             ad: (batch, T)
