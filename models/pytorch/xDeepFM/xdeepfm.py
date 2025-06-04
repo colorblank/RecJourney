@@ -33,8 +33,8 @@ class xDeepFMArgs:
     num_classes: int = 1
 
     def __post_init__(self):
-        self.dnn_args.dim_in = num_fields * emb_dim
-        self.cin_args.dim_in = num_fields
+        self.dnn_args.dim_in = self.num_fields * self.emb_dim
+        self.cin_args.dim_in = self.num_fields
 
 
 class LinearACT(nn.Module):
