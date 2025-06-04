@@ -86,7 +86,7 @@ class FDN(nn.Module):
             ]
         )
 
-    def forward(self, features: dict[int, torch.Tensor]) -> list[torch.Tensor]:
+    def forward(self, features: dict[str, torch.Tensor]) -> list[torch.Tensor]:
         """
         定义前向传播逻辑。
 
