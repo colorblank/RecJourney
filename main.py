@@ -7,60 +7,32 @@
 import os
 
 import pandas as pd
-
-from preprocess.kuairand_preprocess import (
-    get_feature_columns,
-    load_kuairand_data,
-    preprocess_kuairand_features,
-)
+from preprocess.data_processor import DataProcessor
 
 
 def main():
-    """
-    主函数，执行 KuaiRand 数据集的预处理流程。
-    """
-    # 定义数据集路径
-    # 假设脚本在 RecJourney 目录下运行，KuaiRand-1K 在同级目录下
-    data_root_path: str = "KuaiRand-1K"
-    data_path: str = os.path.join(data_root_path, "data")
-
-    # 检查数据路径是否存在
+    # read KuaiRand-1K/data/kuairand_merged_data.parquet
+    data_path = "KuaiRand-1K/data/kuairand_merged_data.parquet"
     if not os.path.exists(data_path):
-        print(f"错误: 数据路径 '{data_path}' 不存在。请确保 KuaiRand-1K 数据集已下载并解压。")
-        print("请参考 KuaiRand-1K/README.md 下载数据。")
-        return
+        raise FileNotFoundError(f"Data file not found: {data_path}")
 
-    # 加载数据
-    print("开始加载 KuaiRand-1K 数据...")
-    try:
-        log_df, user_df, video_basic_df, video_statistic_df = load_kuairand_data(data_path)
-        print("数据加载完成。")
-    except FileNotFoundError as e:
-        print(f"加载数据文件时发生错误: {e}")
-        print("请检查数据文件路径是否正确，并确保文件存在。")
-        return
-    except Exception as e:
-        print(f"加载数据时发生未知错误: {e}")
-        return
+    # 为了测试，只加载少量数据
+    df = pd.read_parquet(data_path).head(1000)
+    print(f"Loaded data with shape: {df.shape}")
+    print(df.head())
+    print(f"Data columns: {df.columns.tolist()}")
+    print("info:", df.info())
 
-    # 运行预处理
-    print("开始预处理特征...")
-    try:
-        processed_df = preprocess_kuairand_features(
-            log_df, user_df, video_basic_df, video_statistic_df
-        )
-        print("特征预处理完成。")
-        print(f"预处理后的数据形状: {processed_df.shape}")
-        print("预处理后的数据前5行:")
-        print(processed_df.head())
+    print("\n--- Starting Data Preprocessing ---")
+    config_dir = "config/dataset/KuaiRank-1K"
+    processor = DataProcessor(config_dir)
+    processed_df = processor.fit_transform(df)
 
-        feature_cols_info = get_feature_columns(processed_df)
-        print("\n特征列信息:")
-        for k, v in feature_cols_info.items():
-            print(f"{k}: {v}")
-
-    except Exception as e:
-        print(f"预处理过程中发生错误: {e}")
+    print("\n--- Preprocessing Finished ---")
+    print(f"Processed data with shape: {processed_df.shape}")
+    print(processed_df.head())
+    print(f"Processed data columns: {processed_df.columns.tolist()}")
+    print("Processed data info:", processed_df.info())
 
 
 if __name__ == "__main__":
