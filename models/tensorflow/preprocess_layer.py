@@ -108,7 +108,6 @@ class KerasPreprocessorLayer(tf.keras.layers.Layer):
         # 拟合交叉特征查找层
         cross_feature_config = self.config.get("cross_feature_config", {})
         if cross_feature_config.get("enabled", False) and self.cross_feature_lookup:
-            cross_feature_combinations = []
             for cross_features in cross_feature_config.get("features", []):
                 # 假设输入是字典形式的张量
                 # 这是一个简化的方法，实际需要迭代数据集并构建所有交叉组合的字符串
