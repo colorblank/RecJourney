@@ -52,9 +52,6 @@ class DataProcessor:
         # 1. 缺失值处理
         if self.na_config.get("NA_Processing", {}).get("enabled", False):
             na_strategy = self.na_config["NA_Processing"].get("strategy", "fill")
-            default_fill_value = self.na_config["NA_Processing"].get(
-                "default_fill_value", "UNKNOWN"
-            )
             fill_values_map = {
                 f["feaure_name"]: f["fill_value"]
                 for f in self.na_config["NA_Processing"].get("features", [])
@@ -83,9 +80,6 @@ class DataProcessor:
         hash_features_config = []  # 用于 HashTransform
 
         for feature_def in self.feature_config.get("feature_processing", []):
-            feature_name = feature_def["feaure_name"]
-            feature_type = feature_def["feature_type"]
-
             for process_step in feature_def.get("feature_process", []):
                 function_name = process_step["function_name"]
                 col_in = process_step["col_in"]
