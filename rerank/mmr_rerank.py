@@ -240,31 +240,30 @@ def main() -> None:
     for item in final_items:
         print(item)
 
+    # MMR 重排阶段
+    num_final_results = 6
+
+    # 尝试不同的多样性参数
+    print("\n--- MMR 重排结果 (lambda_diversity = 0.7，更偏向多样性) ---")
+    mmr_re_ranker_diversity = MMRReRanker(lambda_diversity=0.7)
+    final_ranked_items_diversity = mmr_re_ranker_diversity.re_rank(
+        candidates, num_final_results
+    )
+
+    print("最终推荐结果:")
+    for item in final_ranked_items_diversity:
+        print(item)
+
+    print("\n--- MMR 重排结果 (lambda_diversity = 0.3，更偏向准确性/召回顺序) ---")
+    mmr_re_ranker_accuracy = MMRReRanker(lambda_diversity=0.3)
+    final_ranked_items_accuracy = mmr_re_ranker_accuracy.re_rank(
+        candidates, num_final_results
+    )
+
+    print("最终推荐结果:")
+    for item in final_ranked_items_accuracy:
+        print(item)
+
 
 if __name__ == "__main__":
     main()
-
-
-# MMR 重排阶段
-num_final_results = 6
-
-# 尝试不同的多样性参数
-print("\n--- MMR 重排结果 (lambda_diversity = 0.7，更偏向多样性) ---")
-mmr_re_ranker_diversity = MMRReRanker(lambda_diversity=0.7)
-final_ranked_items_diversity = mmr_re_ranker_diversity.re_rank(
-    candidate_for_rerank, num_final_results
-)
-
-print("最终推荐结果:")
-for item in final_ranked_items_diversity:
-    print(item)
-
-print("\n--- MMR 重排结果 (lambda_diversity = 0.3，更偏向准确性/召回顺序) ---")
-mmr_re_ranker_accuracy = MMRReRanker(lambda_diversity=0.3)
-final_ranked_items_accuracy = mmr_re_ranker_accuracy.re_rank(
-    candidate_for_rerank, num_final_results
-)
-
-print("最终推荐结果:")
-for item in final_ranked_items_accuracy:
-    print(item)
