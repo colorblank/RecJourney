@@ -162,7 +162,7 @@ def str_to_date(x: str, format: str) -> datetime:
         elif format == "%Y-%m-%d":
             return datetime.strptime(x, "%Y%m%d")
         else:
-            raise # 如果都不是，则重新抛出原始错误
+            raise  # 如果都不是，则重新抛出原始错误
 
 
 def get_day(x: datetime) -> int:
