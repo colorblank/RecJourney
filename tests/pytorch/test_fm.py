@@ -11,22 +11,24 @@ def test_fm_forward():
     num_fields = [3, 4, 5]
     emb_dim = 16
     batch_size = 2
-    
+
     # 创建模型实例
     fm_model = FactorizationMachine(
         num_fields=num_fields, emb_dim=emb_dim, use_bias=True, unify_embedding=True
     )
-    
+
     # 创建模拟输入数据
     # 输入x的每一列对应一个特征字段的索引
-    x = torch.randint(0, max(num_fields), (batch_size, len(num_fields)), dtype=torch.long)
-    
+    x = torch.randint(
+        0, max(num_fields), (batch_size, len(num_fields)), dtype=torch.long
+    )
+
     # 执行前向传播
     output = fm_model(x)
-    
+
     # 检查输出的形状
     assert output.shape == (batch_size, 1), "FM模型输出形状不正确"
-    
+
     # 检查输出是否为浮点类型
     assert output.dtype == torch.float32, "FM模型输出数据类型不正确"
 
@@ -39,12 +41,11 @@ def test_second_order_interaction():
     测试 second_order_interaction 函数。
     """
     from models.pytorch.FM.fm import second_order_interaction
-    
+
     # 模拟输入数据 (batch_size, num_fields, embedding_dim)
-    x = torch.tensor([
-        [[1.0, 2.0], [3.0, 4.0]],
-        [[0.5, 1.5], [2.5, 3.5]]
-    ], dtype=torch.float32) # batch_size=2, num_fields=2, embedding_dim=2
+    x = torch.tensor(
+        [[[1.0, 2.0], [3.0, 4.0]], [[0.5, 1.5], [2.5, 3.5]]], dtype=torch.float32
+    )  # batch_size=2, num_fields=2, embedding_dim=2
 
     # 预期计算:
     # batch 1:
@@ -74,10 +75,14 @@ def test_second_order_interaction():
     expected_output = torch.tensor([[11.0], [6.5]], dtype=torch.float32)
 
     output = second_order_interaction(x)
-    
-    assert torch.allclose(output, expected_output), "second_order_interaction 函数计算不正确"
+
+    assert torch.allclose(output, expected_output), (
+        "second_order_interaction 函数计算不正确"
+    )
     assert output.shape == (x.size(0), 1), "second_order_interaction 函数输出形状不正确"
-    assert output.dtype == torch.float32, "second_order_interaction 函数输出数据类型不正确"
+    assert output.dtype == torch.float32, (
+        "second_order_interaction 函数输出数据类型不正确"
+    )
 
     print(f"second_order_interaction 输出: {output}")
 
