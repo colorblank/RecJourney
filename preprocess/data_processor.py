@@ -62,9 +62,7 @@ class DataProcessor:
         na_config = self.preprocess_config.NA_Processing
         if na_config.enabled:
             na_strategy = na_config.strategy
-            fill_values_map = {
-                f.feature_name: f.fill_value for f in na_config.features
-            }
+            fill_values_map = {f.feature_name: f.fill_value for f in na_config.features}
 
             # 构建 MissingValueFiller 的配置
             mvf_config = {"missing_value_fill_strategy": {}}
