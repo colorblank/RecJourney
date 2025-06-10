@@ -1,7 +1,7 @@
 import yaml
 import pandas as pd
-from typing import Dict, Any, List
-from preprocess.operations import (
+from typing import Any, List
+from preprocess.processors import (
     MissingValueFiller,
     TimeFeatureExtractor,
     BooleanConverter,
@@ -11,6 +11,7 @@ from preprocess.operations import (
     ColumnCleaner,
     HashTransformer,
 )
+from preprocess.config import PreprocessConfig
 
 
 class DataProcessor:
@@ -25,14 +26,22 @@ class DataProcessor:
         Args:
             config_path: 配置文件目录路径。
         """
-        self.base_config = self._load_config(f"{config_path}/base.yml")
-        self.feature_config = self._load_config(f"{config_path}/feature.yml")
-        self.na_config = self._load_config(f"{config_path}/na.yml")
+        base_config = self._load_config(f"{config_path}/base.yml")
+        feature_config = self._load_config(f"{config_path}/feature.yml")
+        na_config = self._load_config(f"{config_path}/na.yml")
+
+        # 合并所有配置到一个字典中
+        merged_config = {
+            "dataset": base_config.get("dataset", {}),
+            "NA_Processing": na_config.get("NA_Processing", {}),
+            "feature_processing": feature_config.get("feature_processing", []),
+        }
+        self.preprocess_config: PreprocessConfig = PreprocessConfig(**merged_config)
 
         self.processors: List[Any] = []
         self._initialize_processors()
 
-    def _load_config(self, file_path: str) -> Dict[str, Any]:
+    def _load_config(self, file_path: str) -> dict:
         """
         加载 YAML 配置文件。
 
@@ -50,16 +59,16 @@ class DataProcessor:
         根据配置文件初始化各种预处理器。
         """
         # 1. 缺失值处理
-        if self.na_config.get("NA_Processing", {}).get("enabled", False):
-            na_strategy = self.na_config["NA_Processing"].get("strategy", "fill")
+        na_config = self.preprocess_config.NA_Processing
+        if na_config.enabled:
+            na_strategy = na_config.strategy
             fill_values_map = {
-                f["feaure_name"]: f["fill_value"]
-                for f in self.na_config["NA_Processing"].get("features", [])
+                f.feature_name: f.fill_value for f in na_config.features
             }
 
             # 构建 MissingValueFiller 的配置
             mvf_config = {"missing_value_fill_strategy": {}}
-            for feature in self.base_config["dataset"]["column_names"]:
+            for feature in self.preprocess_config.dataset.column_names:
                 if feature in fill_values_map:
                     mvf_config["missing_value_fill_strategy"][feature] = (
                         fill_values_map[feature]
@@ -79,12 +88,16 @@ class DataProcessor:
         log_features_config = []
         hash_features_config = []  # 用于 HashTransform
 
-        for feature_def in self.feature_config.get("feature_processing", []):
-            for process_step in feature_def.get("feature_process", []):
-                function_name = process_step["function_name"]
-                col_in = process_step["col_in"]
-                col_out = process_step["col_out"]
-                function_parameters = process_step.get("function_parameters", {})
+        for feature_def in self.preprocess_config.feature_processing:
+            for process_step in feature_def.feature_process:
+                function_name = process_step.function_name
+                col_in = process_step.col_in
+                col_out = process_step.col_out
+                function_parameters = (
+                    process_step.function_parameters.dict()
+                    if process_step.function_parameters
+                    else {}
+                )
 
                 if function_name == "TimeFeatureExtractTransform":
                     time_features_config.append(
@@ -129,16 +142,16 @@ class DataProcessor:
                     )
 
         # 收集所有原始列名和预期生成的新列名
-        original_cols = set(self.base_config["dataset"]["column_names"])
+        original_cols = set(self.preprocess_config.dataset.column_names)
         generated_cols = set()
 
-        for feature_def in self.feature_config.get("feature_processing", []):
-            for process_step in feature_def.get("feature_process", []):
-                col_out = process_step["col_out"]
+        for feature_def in self.preprocess_config.feature_processing:
+            for process_step in feature_def.feature_process:
+                col_out = process_step.col_out
                 generated_cols.add(col_out)
                 # 如果 col_in 和 col_out 不同，那么 col_in 可能是需要清理的原始列
-                if process_step["col_in"] != col_out:
-                    original_cols.add(process_step["col_in"])  # 确保原始列被记录
+                if process_step.col_in != col_out:
+                    original_cols.add(process_step.col_in)  # 确保原始列被记录
 
         # 添加时间特征提取器
         if time_features_config:
