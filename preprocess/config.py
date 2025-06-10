@@ -26,9 +26,9 @@ class NAProcessingFeature(BaseModel):
     NA 处理特征配置模型。
     """
 
-    feaure_name: str
+    feature_name: str
     feature_type: Literal["sparse", "dense", "varlen_sparse"]
-    feauture_side: Literal["user", "item", "context"]
+    feature_side: Literal["user", "item", "context"]
     data_type: str
     fill_value: Optional[Union[int, float, str]] = None
 
@@ -71,8 +71,9 @@ class FeatureProcessingConfig(BaseModel):
     特征处理配置模型。
     """
 
-    feaure_name: str
+    feature_name: str
     feature_type: str
+    feature_side: Literal["user", "item", "context"]
     data_type: str
     feature_process: List[FeatureProcessStep]
 
