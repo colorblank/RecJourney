@@ -3,449 +3,558 @@ NA_Processing:
   strategy: fill
   default_fill_value: UNKNOWN # 填充缺失值的默认值
   features:
-    - feaure_name: user_id
+    - feature_name: user_id
       feature_type: sparse # 特征类型，sparse表示稀疏特征，dense表示稠密特征, varlen_sparse表示变长稀疏特征
-      feauture_side: user # 特征侧，user表示用户侧，item表示物品侧, context表示上下文侧
+      feature_side: user # 特征侧，user表示用户侧，item表示物品侧, context表示上下文侧
       data_type: int64 # 特征数据类型， 映射到pandas数据类型
       fill_value: 0 # 用户ID缺失填充为0, 覆盖默认填充值
-    - feaure_name: video_id
+    - feature_name: video_id
       feature_type: sparse
-      feauture_side: item
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: date
-      feature_type: context
+    - feature_name: date
+      feature_type: sparse # Changed from context to sparse
+      feature_side: item
       data_type: object
       fill_value: "1970-01-01"
-    - feaure_name: hourmin
-      feature_type: context
+    - feature_name: hourmin
+      feature_type: sparse # Changed from context to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: time_ms
-      feature_type: context
+    - feature_name: time_ms
+      feature_type: sparse # Changed from context to sparse
+      feature_side: user
       data_type: int64
       fill_value: 0
-    - feaure_name: is_click
-      feature_type: label
+    - feature_name: is_click
+      feature_type: sparse # Changed from label to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: is_like
-      feature_type: label
+    - feature_name: is_like
+      feature_type: sparse # Changed from label to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: is_follow
-      feature_type: boolean
+    - feature_name: is_follow
+      feature_type: sparse # Changed from boolean to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: is_comment
-      feature_type: boolean
+    - feature_name: is_comment
+      feature_type: sparse # Changed from boolean to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: is_forward
-      feature_type: boolean
+    - feature_name: is_forward
+      feature_type: sparse # Changed from boolean to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: is_hate
-      feature_type: boolean
+    - feature_name: is_hate
+      feature_type: sparse # Changed from boolean to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: long_view
-      feature_type: boolean
+    - feature_name: long_view
+      feature_type: sparse # Changed from boolean to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: play_time_ms
+    - feature_name: play_time_ms
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: duration_ms
+    - feature_name: duration_ms
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: profile_stay_time
+    - feature_name: profile_stay_time
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: comment_stay_time
+    - feature_name: comment_stay_time
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: is_profile_enter
-      feature_type: boolean
+    - feature_name: is_profile_enter
+      feature_type: sparse # Changed from boolean to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: is_rand
-      feature_type: boolean
+    - feature_name: is_rand
+      feature_type: sparse # Changed from boolean to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: tab
+    - feature_name: tab
       feature_type: sparse
+      feature_side: item
       data_type: object
       fill_value: "UNKNOWN"
-    - feaure_name: user_active_degree
+    - feature_name: user_active_degree
       feature_type: sparse
+      feature_side: user
       data_type: object
       fill_value: "UNKNOWN"
-    - feaure_name: is_lowactive_period
-      feature_type: boolean
+    - feature_name: is_lowactive_period
+      feature_type: sparse # Changed from boolean to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: is_live_streamer
-      feature_type: boolean
+    - feature_name: is_live_streamer
+      feature_type: sparse # Changed from boolean to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: is_video_author
-      feature_type: boolean
+    - feature_name: is_video_author
+      feature_type: sparse # Changed from boolean to sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: follow_user_num_x
+    - feature_name: follow_user_num_x
       feature_type: dense
+      feature_side: user
       data_type: int64
       fill_value: 0
-    - feaure_name: follow_user_num_range
+    - feature_name: follow_user_num_range
       feature_type: sparse
+      feature_side: user
       data_type: object
       fill_value: "UNKNOWN"
-    - feaure_name: fans_user_num
+    - feature_name: fans_user_num
       feature_type: dense
+      feature_side: user
       data_type: int64
       fill_value: 0
-    - feaure_name: fans_user_num_range
+    - feature_name: fans_user_num_range
       feature_type: sparse
+      feature_side: user
       data_type: object
       fill_value: "UNKNOWN"
-    - feaure_name: friend_user_num
+    - feature_name: friend_user_num
       feature_type: dense
+      feature_side: user
       data_type: int64
       fill_value: 0
-    - feaure_name: friend_user_num_range
+    - feature_name: friend_user_num_range
       feature_type: sparse
+      feature_side: user
       data_type: object
       fill_value: "UNKNOWN"
-    - feaure_name: register_days
+    - feature_name: register_days
       feature_type: dense
+      feature_side: user
       data_type: int64
       fill_value: 0
-    - feaure_name: register_days_range
+    - feature_name: register_days_range
       feature_type: sparse
+      feature_side: user
       data_type: object
       fill_value: "UNKNOWN"
-    - feaure_name: onehot_feat0
+    - feature_name: onehot_feat0
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat1
+    - feature_name: onehot_feat1
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat2
+    - feature_name: onehot_feat2
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat3
+    - feature_name: onehot_feat3
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat4
+    - feature_name: onehot_feat4
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat5
+    - feature_name: onehot_feat5
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat6
+    - feature_name: onehot_feat6
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat7
+    - feature_name: onehot_feat7
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat8
+    - feature_name: onehot_feat8
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat9
+    - feature_name: onehot_feat9
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat10
+    - feature_name: onehot_feat10
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat11
+    - feature_name: onehot_feat11
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat12
+    - feature_name: onehot_feat12
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat13
+    - feature_name: onehot_feat13
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat14
+    - feature_name: onehot_feat14
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat15
+    - feature_name: onehot_feat15
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat16
+    - feature_name: onehot_feat16
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: onehot_feat17
+    - feature_name: onehot_feat17
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: author_id
+    - feature_name: author_id
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: video_type
+    - feature_name: video_type
       feature_type: sparse
+      feature_side: item
       data_type: object
       fill_value: "UNKNOWN"
-    - feaure_name: upload_dt
-      feature_type: context
+    - feature_name: upload_dt
+      feature_type: sparse # Changed from context to sparse
+      feature_side: item
       data_type: object
       fill_value: "1970-01-01"
-    - feaure_name: upload_type
+    - feature_name: upload_type
       feature_type: sparse
+      feature_side: item
       data_type: object
       fill_value: "UNKNOWN"
-    - feaure_name: visible_status
+    - feature_name: visible_status
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: video_duration
+    - feature_name: video_duration
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: server_width
+    - feature_name: server_width
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: server_height
+    - feature_name: server_height
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: music_id
+    - feature_name: music_id
       feature_type: sparse
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: music_type
+    - feature_name: music_type
       feature_type: sparse
+      feature_side: item
       data_type: object
       fill_value: "UNKNOWN"
-    - feaure_name: tag
+    - feature_name: tag
       feature_type: varlen_sparse
+      feature_side: item
       data_type: object
       fill_value: ""
-    - feaure_name: counts
+    - feature_name: counts
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: show_cnt
+    - feature_name: show_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: show_user_num
+    - feature_name: show_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: play_cnt
+    - feature_name: play_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: play_user_num
+    - feature_name: play_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: play_duration
+    - feature_name: play_duration
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: complete_play_cnt
+    - feature_name: complete_play_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: complete_play_user_num
+    - feature_name: complete_play_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: valid_play_cnt
+    - feature_name: valid_play_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: valid_play_user_num
+    - feature_name: valid_play_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: long_time_play_cnt
+    - feature_name: long_time_play_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: long_time_play_user_num
+    - feature_name: long_time_play_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: short_time_play_cnt
+    - feature_name: short_time_play_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: short_time_play_user_num
+    - feature_name: short_time_play_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: play_progress
+    - feature_name: play_progress
       feature_type: dense
+      feature_side: item
       data_type: float64
       fill_value: 0.0
-    - feaure_name: comment_stay_duration
+    - feature_name: comment_stay_duration
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: like_cnt
+    - feature_name: like_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: like_user_num
+    - feature_name: like_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: click_like_cnt
+    - feature_name: click_like_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: double_click_cnt
+    - feature_name: double_click_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: cancel_like_cnt
+    - feature_name: cancel_like_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: cancel_like_user_num
+    - feature_name: cancel_like_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: comment_cnt
+    - feature_name: comment_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: comment_user_num
+    - feature_name: comment_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: direct_comment_cnt
+    - feature_name: direct_comment_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: reply_comment_cnt
+    - feature_name: reply_comment_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: delete_comment_cnt
+    - feature_name: delete_comment_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: delete_comment_user_num
+    - feature_name: delete_comment_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: comment_like_cnt
+    - feature_name: comment_like_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: comment_like_user_num
+    - feature_name: comment_like_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: follow_cnt
+    - feature_name: follow_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: follow_user_num_y
+    - feature_name: follow_user_num_y
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: cancel_follow_cnt
+    - feature_name: cancel_follow_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: cancel_follow_user_num
+    - feature_name: cancel_follow_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: share_cnt
+    - feature_name: share_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: share_user_num
+    - feature_name: share_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: download_cnt
+    - feature_name: download_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: download_user_num
+    - feature_name: download_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: report_cnt
+    - feature_name: report_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: report_user_num
+    - feature_name: report_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: reduce_similar_cnt
+    - feature_name: reduce_similar_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: reduce_similar_user_num
+    - feature_name: reduce_similar_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: collect_cnt
+    - feature_name: collect_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: collect_user_num
+    - feature_name: collect_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: cancel_collect_cnt
+    - feature_name: cancel_collect_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: cancel_collect_user_num
+    - feature_name: cancel_collect_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: direct_comment_user_num
+    - feature_name: direct_comment_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: reply_comment_user_num
+    - feature_name: reply_comment_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: share_all_cnt
+    - feature_name: share_all_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: share_all_user_num
+    - feature_name: share_all_user_num
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
-    - feaure_name: outsite_share_all_cnt
+    - feature_name: outsite_share_all_cnt
       feature_type: dense
+      feature_side: item
       data_type: int64
       fill_value: 0
