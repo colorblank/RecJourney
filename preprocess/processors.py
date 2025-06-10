@@ -327,11 +327,18 @@ class MultivaluedProcessor(BasePandasProcessor):
         df_transformed = df.copy()
         for feature_config in self.multivalued_features_config:
             col_in = feature_config["col_in"]
-            col_out = feature_config["col_out"]
-            sep = feature_config["sep"]
-            vocabulary_size = feature_config["vocabulary_size"]
-            max_len = feature_config["max_len"]
-            padding_value = feature_config["padding_value"]
+            col_out: str = feature_config["col_out"]
+            sep: str = feature_config["sep"]
+            vocabulary_size: int = feature_config["vocabulary_size"]
+            max_len: int | None = feature_config.get("max_len")
+            padding_value: Any = feature_config["padding_value"]
+
+            if max_len is None:
+                print(
+                    f"警告: 特征 '{col_in}' 的 'max_len' 未配置或为 None，"
+                    "将使用默认值 0 进行填充。"
+                )
+                max_len = 0
 
             if col_in not in df_transformed.columns:
                 print(f"警告: 列 '{col_in}' 不存在，跳过多值特征处理。")
