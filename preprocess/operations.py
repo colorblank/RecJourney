@@ -223,5 +223,3 @@ def isoweekday(x: datetime) -> int:
         周几（1=周一，7=周日）。
     """
     return x.isoweekday()
-
-
