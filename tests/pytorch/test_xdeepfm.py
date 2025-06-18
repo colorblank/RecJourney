@@ -48,7 +48,9 @@ def test_xdeepfm_forward():
     assert output.dtype == torch.float32, "xDeepFM模型输出数据类型不正确"
 
     # 检查输出值是否在 [0, 1] 之间 (因为最后有 Sigmoid 激活)
-    assert torch.all(output >= 0) and torch.all(output <= 1), "xDeepFM模型输出值不在[0, 1]之间"
+    assert torch.all(output >= 0) and torch.all(output <= 1), (
+        "xDeepFM模型输出值不在[0, 1]之间"
+    )
 
     print(f"xDeepFM模型输出形状: {output.shape}")
     print(f"xDeepFM模型输出数据类型: {output.dtype}")

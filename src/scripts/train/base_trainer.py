@@ -48,7 +48,9 @@ class BaseTrainer(nn.Module):
 
         self.emb_dict = emb_dict  # 嵌入层字典
         self.base_model = base_model.to(device)  # 基础模型
-        self.optimizer = optimizer(list(self.parameters()), lr=lr)  # 优化器 # type: ignore
+        self.optimizer = optimizer(
+            list(self.parameters()), lr=lr
+        )  # 优化器 # type: ignore
 
         self.log_interval = log_interval  # 日志打印间隔
 
@@ -115,9 +117,9 @@ class BaseTrainer(nn.Module):
         self, chunk: pd.DataFrame, pipe: Pipeline, reduce: str = "sum"
     ):
         x = chunk[pipe.col_in]
-        x = x.fillna(pipe.fillna) # fillna should be reassigned
+        x = x.fillna(pipe.fillna)  # fillna should be reassigned
         for op in pipe.ops:
-            if callable(op): # 确保op是可调用的
+            if callable(op):  # 确保op是可调用的
                 x = x.apply(op)
             else:
                 # 如果op不是可调用的，这表示在dtypes.py中转换失败，或者ops中存在非预期的元素
@@ -205,7 +207,8 @@ class BaseTrainer(nn.Module):
         chunk_index: int,  # 当前数据块的索引
         sample_count: int,  # 目前为止处理的样本总数
         loss: float,  # 当前数据块的损失值
-        metrics: tuple[float, float, float] | None = None,  # 额外指标元组（准确率, AUC, 对数损失）, 默认为None
+        metrics: tuple[float, float, float]
+        | None = None,  # 额外指标元组（准确率, AUC, 对数损失）, 默认为None
     ) -> None:
         """
         记录训练过程中的评估指标。

@@ -152,7 +152,7 @@ class Config:
                 cur_pipe = Pipeline(**pipe_item)  # 使用解包操作符**实例化Pipeline对象
                 self.pipelines[i] = cur_pipe  # 更新列表中的元素为实例化的Pipeline对象
             else:
-                cur_pipe = pipe_item # 已经是Pipeline实例
+                cur_pipe = pipe_item  # 已经是Pipeline实例
 
             if cur_pipe.feature_type.endswith("sparse") and cur_pipe.source != "label":
                 cur_emb_dim = 0
@@ -161,9 +161,15 @@ class Config:
                 elif self.defaul_emb_dim is not None:
                     cur_emb_dim = self.defaul_emb_dim
 
-                self.sparse_dim += cur_emb_dim  # 如果特征类型为稀疏，累加嵌入维度到稀疏特征维度
-                
-                num_embeddings_val = cur_pipe.num_embeddings if cur_pipe.num_embeddings is not None else 0
+                self.sparse_dim += (
+                    cur_emb_dim  # 如果特征类型为稀疏，累加嵌入维度到稀疏特征维度
+                )
+
+                num_embeddings_val = (
+                    cur_pipe.num_embeddings
+                    if cur_pipe.num_embeddings is not None
+                    else 0
+                )
                 self.emb_param_dict[cur_pipe.col_out] = (
                     num_embeddings_val,  # 获取特征名称对应的嵌入维度和嵌入向量维度
                     cur_emb_dim,

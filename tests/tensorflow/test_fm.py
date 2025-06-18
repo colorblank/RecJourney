@@ -1,4 +1,3 @@
-import tensorflow as tf
 import pytest
 
 # from models.tensorflow.FM.fm import FactorizationMachine # 待实现
