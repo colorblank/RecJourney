@@ -7,7 +7,7 @@ from loguru import logger
 from sklearn.metrics import accuracy_score, log_loss, roc_auc_score
 from torch import Tensor
 
-from preprocess.dtypes import Config, Pipeline
+from src.features.dtypes import Config, Pipeline
 
 
 class BaseTrainer(nn.Module):
@@ -336,7 +336,7 @@ class BaseTrainer(nn.Module):
 
 #     from models.MMOE.mmoe import MMOE, HeadArgs, MMOEArgs, SharedBottomModel
 #     from preprocess.dtypes import DataConfig
-#     from preprocess.emb import build_emb_dict, cal_feat_dim
+#     from src.features.emb import build_emb_dict, cal_feat_dim
 
 #     work_dir = Path.cwd()
 #     with open(work_dir / "config" / "ijcai18.yml", "r") as f:

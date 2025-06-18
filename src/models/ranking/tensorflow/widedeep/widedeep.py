@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from ..input_layer import InputLayer
+from src.common.input_layer import InputLayer
 
 
 class WideAndDeep(tf.keras.Model):

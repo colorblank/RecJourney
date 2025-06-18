@@ -56,7 +56,7 @@ class Pipeline:
                 # 假设每个字典只有一个键值对
                 func_name, param_dict = next(iter(op_item.items()))
                 # 导入操作模块，并根据函数名获取具体函数
-                op_hub = importlib.import_module(".operation", package="preprocess")
+                op_hub = importlib.import_module(".operation", package="src.features")
                 func = getattr(op_hub, func_name)
                 # 根据是否提供参数，决定是否使用 partial 包装函数
                 if not param_dict:  # 检查字典是否为空
