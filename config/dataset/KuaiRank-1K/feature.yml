@@ -1,0 +1,1270 @@
+feature_processing:
+  - feature_name: user_id
+    feature_type: id
+    data_type: int64
+    feature_side: user
+    feature_process:
+      - col_in: user_id
+        col_out: user_id
+        function_name: HashTransform # 对应特征处理函数名称
+        function_parameters:
+          hash_method: md5 # 哈希方法，支持md5, sha256等
+          vocabulary_size: 1000000 # 哈希后特征的词典大小
+        out_data_type: int64 # 输出数据类型
+        out_data_shape: [] # 输出数据形状，空列表表示一维， [1]表示二维， [1, 1]表示三维等
+  - feature_name: video_id
+    feature_type: id
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: video_id
+        col_out: video_id
+        function_name: HashTransform
+        function_parameters:
+          hash_method: md5
+          vocabulary_size: 1000000
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: author_id
+    feature_type: id
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: author_id
+        col_out: author_id
+        function_name: HashTransform
+        function_parameters:
+          hash_method: md5
+          vocabulary_size: 1000000
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: music_id
+    feature_type: id
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: music_id
+        col_out: music_id
+        function_name: HashTransform
+        function_parameters:
+          hash_method: md5
+          vocabulary_size: 1000000
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: time_ms
+    feature_type: context
+    data_type: int64
+    feature_side: user
+    feature_process:
+      - col_in: time_ms
+        col_out: dayofweek
+        function_name: TimeFeatureExtractTransform
+        function_parameters:
+          unit: ms
+          feature: dayofweek
+        out_data_type: int64
+        out_data_shape: []
+      - col_in: time_ms
+        col_out: hour
+        function_name: TimeFeatureExtractTransform
+        function_parameters:
+          unit: ms
+          feature: hour
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: upload_dt
+    feature_type: context
+    data_type: object
+    feature_side: item
+    feature_process:
+      - col_in: upload_dt
+        col_out: upload_dayofweek
+        function_name: TimeFeatureExtractTransform
+        function_parameters:
+          unit: str
+          format: "%Y%m%d"
+          feature: dayofweek
+        out_data_type: int64
+        out_data_shape: []
+      - col_in: upload_dt
+        col_out: upload_month
+        function_name: TimeFeatureExtractTransform
+        function_parameters:
+          unit: str
+          format: "%Y%m%d"
+          feature: month
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: date
+    feature_type: context
+    data_type: object
+    feature_side: item
+    feature_process:
+      - col_in: date
+        col_out: date_dayofweek
+        function_name: TimeFeatureExtractTransform
+        function_parameters:
+          unit: str
+          format: "%Y%m%d"
+          feature: dayofweek
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: hourmin
+    feature_type: context
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: hourmin
+        col_out: hourmin_hour
+        function_name: TimeFeatureExtractTransform
+        function_parameters:
+          unit: int_to_hour
+          feature: hour
+        out_data_type: int64
+        out_data_shape: []
+      - col_in: hourmin
+        col_out: hourmin_minute
+        function_name: TimeFeatureExtractTransform
+        function_parameters:
+          unit: int_to_minute
+          feature: minute
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: play_time_ms
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: play_time_ms
+        col_out: play_time_ms_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: duration_ms
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: duration_ms
+        col_out: duration_ms_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: profile_stay_time
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: profile_stay_time
+        col_out: profile_stay_time_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: comment_stay_time
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: comment_stay_time
+        col_out: comment_stay_time_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: follow_user_num_x
+    feature_type: dense
+    data_type: int64
+    feature_side: user
+    feature_process:
+      - col_in: follow_user_num_x
+        col_out: follow_user_num_x_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: fans_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: user
+    feature_process:
+      - col_in: fans_user_num
+        col_out: fans_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: friend_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: user
+    feature_process:
+      - col_in: friend_user_num
+        col_out: friend_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: register_days
+    feature_type: dense
+    data_type: int64
+    feature_side: user
+    feature_process:
+      - col_in: register_days
+        col_out: register_days_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: video_duration
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: video_duration
+        col_out: video_duration_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: show_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: show_cnt
+        col_out: show_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: play_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: play_cnt
+        col_out: play_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: play_duration
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: play_duration
+        col_out: play_duration_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: like_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: like_cnt
+        col_out: like_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: comment_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: comment_cnt
+        col_out: comment_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: share_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: share_cnt
+        col_out: share_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: download_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: download_cnt
+        col_out: download_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: collect_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: collect_cnt
+        col_out: collect_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: user_active_degree
+    feature_type: sparse
+    data_type: object
+    feature_side: user
+    feature_process:
+      - col_in: user_active_degree
+        col_out: user_active_degree_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: follow_user_num_range
+    feature_type: sparse
+    data_type: object
+    feature_side: user
+    feature_process:
+      - col_in: follow_user_num_range
+        col_out: follow_user_num_range_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: fans_user_num_range
+    feature_type: sparse
+    data_type: object
+    feature_side: user
+    feature_process:
+      - col_in: fans_user_num_range
+        col_out: fans_user_num_range_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: friend_user_num_range
+    feature_type: sparse
+    data_type: object
+    feature_side: user
+    feature_process:
+      - col_in: friend_user_num_range
+        col_out: friend_user_num_range_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: register_days_range
+    feature_type: sparse
+    data_type: object
+    feature_side: user
+    feature_process:
+      - col_in: register_days_range
+        col_out: register_days_range_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: video_type
+    feature_type: sparse
+    data_type: object
+    feature_side: item
+    feature_process:
+      - col_in: video_type
+        col_out: video_type_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: upload_type
+    feature_type: sparse
+    data_type: object
+    feature_side: item
+    feature_process:
+      - col_in: upload_type
+        col_out: upload_type_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: music_type
+    feature_type: sparse
+    data_type: object
+    feature_side: item
+    feature_process:
+      - col_in: music_type
+        col_out: music_type_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: tag
+    feature_type: varlen_sparse
+    data_type: object
+    feature_side: item
+    feature_process:
+      - col_in: tag
+        col_out: tag_processed
+        function_name: MultiValueTransform
+        function_parameters:
+          sep: ","
+          hash_method: md5
+          vocabulary_size: 100000
+          max_len: 10 # 假设最大长度为10
+          padding_value: 0 # 填充值为0
+        out_data_type: int64
+        out_data_shape: [10] # 假设输出形状为 [10]
+  - feature_name: is_lowactive_period
+    feature_type: boolean
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: is_lowactive_period
+        col_out: is_lowactive_period
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: is_live_streamer
+    feature_type: boolean
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: is_live_streamer
+        col_out: is_live_streamer
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: is_video_author
+    feature_type: boolean
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: is_video_author
+        col_out: is_video_author
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: is_click
+    feature_type: label
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: is_click
+        col_out: is_click
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: is_like
+    feature_type: label
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: is_like
+        col_out: is_like
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: is_follow
+    feature_type: boolean
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: is_follow
+        col_out: is_follow
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: is_comment
+    feature_type: boolean
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: is_comment
+        col_out: is_comment
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: is_forward
+    feature_type: boolean
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: is_forward
+        col_out: is_forward
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: is_hate
+    feature_type: boolean
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: is_hate
+        col_out: is_hate
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: long_view
+    feature_type: boolean
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: long_view
+        col_out: long_view
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: is_profile_enter
+    feature_type: boolean
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: is_profile_enter
+        col_out: is_profile_enter
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: is_rand
+    feature_type: boolean
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: is_rand
+        col_out: is_rand
+        function_name: BooleanTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: tab
+    feature_type: sparse
+    data_type: object
+    feature_side: item
+    feature_process:
+      - col_in: tab
+        col_out: tab_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat0
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat0
+        col_out: onehot_feat0_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat1
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat1
+        col_out: onehot_feat1_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat2
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat2
+        col_out: onehot_feat2_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat3
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat3
+        col_out: onehot_feat3_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat4
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat4
+        col_out: onehot_feat4_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat5
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat5
+        col_out: onehot_feat5_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat6
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat6
+        col_out: onehot_feat6_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat7
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat7
+        col_out: onehot_feat7_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat8
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat8
+        col_out: onehot_feat8_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat9
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat9
+        col_out: onehot_feat9_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat10
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat10
+        col_out: onehot_feat10_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat11
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat11
+        col_out: onehot_feat11_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat12
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat12
+        col_out: onehot_feat12_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat13
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat13
+        col_out: onehot_feat13_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat14
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat14
+        col_out: onehot_feat14_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat15
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat15
+        col_out: onehot_feat15_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat16
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat16
+        col_out: onehot_feat16_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: onehot_feat17
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: onehot_feat17
+        col_out: onehot_feat17_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: visible_status
+    feature_type: sparse
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: visible_status
+        col_out: visible_status_encoded
+        function_name: LabelEncodeTransform
+        function_parameters: {}
+        out_data_type: int64
+        out_data_shape: []
+  - feature_name: server_width
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: server_width
+        col_out: server_width_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: server_height
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: server_height
+        col_out: server_height_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: counts
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: counts
+        col_out: counts_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: show_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: show_user_num
+        col_out: show_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: play_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: play_user_num
+        col_out: play_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: complete_play_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: complete_play_cnt
+        col_out: complete_play_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: complete_play_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: complete_play_user_num
+        col_out: complete_play_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: valid_play_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: valid_play_cnt
+        col_out: valid_play_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: valid_play_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: valid_play_user_num
+        col_out: valid_play_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: long_time_play_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: long_time_play_cnt
+        col_out: long_time_play_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: long_time_play_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: long_time_play_user_num
+        col_out: long_time_play_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: short_time_play_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: short_time_play_cnt
+        col_out: short_time_play_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: short_time_play_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: short_time_play_user_num
+        col_out: short_time_play_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: play_progress
+    feature_type: dense
+    data_type: float64
+    feature_side: item
+    feature_process:
+      - col_in: play_progress
+        col_out: play_progress_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: comment_stay_duration
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: comment_stay_duration
+        col_out: comment_stay_duration_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: like_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: like_user_num
+        col_out: like_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: click_like_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: click_like_cnt
+        col_out: click_like_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: double_click_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: double_click_cnt
+        col_out: double_click_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: cancel_like_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: cancel_like_cnt
+        col_out: cancel_like_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: cancel_like_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: cancel_like_user_num
+        col_out: cancel_like_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: comment_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: comment_user_num
+        col_out: comment_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: direct_comment_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: direct_comment_cnt
+        col_out: direct_comment_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: reply_comment_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: reply_comment_cnt
+        col_out: reply_comment_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: delete_comment_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: delete_comment_cnt
+        col_out: delete_comment_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: delete_comment_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: delete_comment_user_num
+        col_out: delete_comment_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: comment_like_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: comment_like_cnt
+        col_out: comment_like_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: comment_like_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: comment_like_user_num
+        col_out: comment_like_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: follow_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: follow_cnt
+        col_out: follow_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: follow_user_num_y
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: follow_user_num_y
+        col_out: follow_user_num_y_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: cancel_follow_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: cancel_follow_cnt
+        col_out: cancel_follow_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: cancel_follow_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: cancel_follow_user_num
+        col_out: cancel_follow_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: share_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: share_user_num
+        col_out: share_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: download_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: download_user_num
+        col_out: download_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: report_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: report_cnt
+        col_out: report_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: report_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: report_user_num
+        col_out: report_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: reduce_similar_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: reduce_similar_cnt
+        col_out: reduce_similar_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: reduce_similar_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: reduce_similar_user_num
+        col_out: reduce_similar_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: collect_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: collect_user_num
+        col_out: collect_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: cancel_collect_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: cancel_collect_cnt
+        col_out: cancel_collect_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: cancel_collect_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: cancel_collect_user_num
+        col_out: cancel_collect_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: direct_comment_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: direct_comment_user_num
+        col_out: direct_comment_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: reply_comment_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: reply_comment_user_num
+        col_out: reply_comment_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: share_all_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: share_all_cnt
+        col_out: share_all_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: share_all_user_num
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: share_all_user_num
+        col_out: share_all_user_num_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
+  - feature_name: outsite_share_all_cnt
+    feature_type: dense
+    data_type: int64
+    feature_side: item
+    feature_process:
+      - col_in: outsite_share_all_cnt
+        col_out: outsite_share_all_cnt_log
+        function_name: LogTransform
+        function_parameters: {}
+        out_data_type: float64
+        out_data_shape: []
