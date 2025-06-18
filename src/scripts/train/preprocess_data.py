@@ -6,46 +6,6 @@
 
 import os
 
-<<<<<<< HEAD:src/scripts/train/preprocess_data.py
-from src.features.kuairand_preprocess import (
-    get_feature_columns,
-    load_kuairand_data,
-    preprocess_kuairand_features,
-)
-
-
-def main():
-    """
-    主函数，执行 KuaiRand 数据集的预处理流程。
-    """
-    # 定义数据集路径
-    # 假设脚本在 RecJourney 目录下运行，KuaiRand-1K 在同级目录下
-    data_root_path: str = "KuaiRand-1K"
-    data_path: str = os.path.join("data", data_root_path, "data")
-
-    # 检查数据路径是否存在
-    if not os.path.exists(data_path):
-        print(
-            f"错误: 数据路径 '{data_path}' 不存在。请确保 KuaiRand-1K 数据集已下载并解压。"
-        )
-        print("请参考 KuaiRand-1K/README.md 下载数据。")
-        return
-
-    # 加载数据
-    print("开始加载 KuaiRand-1K 数据...")
-    try:
-        log_df, user_df, video_basic_df, video_statistic_df = load_kuairand_data(
-            data_path
-        )
-        print("数据加载完成。")
-    except FileNotFoundError as e:
-        print(f"加载数据文件时发生错误: {e}")
-        print("请检查数据文件路径是否正确，并确保文件存在。")
-        return
-    except Exception as e:
-        print(f"加载数据时发生未知错误: {e}")
-        return
-=======
 import pandas as pd
 from preprocess.data_processor import DataProcessor
 
@@ -62,7 +22,6 @@ def main():
     print(df.head())
     print(f"Data columns: {df.columns.tolist()}")
     print("info:", df.info())
->>>>>>> origin/refactor-ctr-models:main.py
 
     print("\n--- Starting Data Preprocessing ---")
     config_dir = "config/dataset/KuaiRank-1K"
